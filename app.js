@@ -10,30 +10,46 @@ const mobileMenu = document.querySelector("[data-mobile-menu]");
 const state = {
   member: readJson("postoria-member"),
   token: localStorage.getItem("postoria-token") || "",
-  slide: 0
+  slide: 0,
+  search: "",
+  favorites: readJson("postoria-favorites") || []
 };
 
 const heroSlides = [
   {
-    image: "assets/hero-sunset.jpg",
+    image: "assets/banner-01.jpg",
     eyebrow: "來自世界各地的明信片",
     title: "收藏美好時刻，分享世界",
     copy: "探索旅人的回憶，整理自己的收藏，讓每張明信片都有故事。",
-    place: "Hokkaido Sunset"
+    place: "Gangnam Library"
   },
   {
-    image: "assets/hongkong.jpg",
+    image: "assets/banner-02.jpg",
     eyebrow: "城市風景與旅途片段",
     title: "把遠方，收進你的收藏",
     copy: "用標籤、城市與國家分類，快速找到想看的明信片。",
-    place: "Hong Kong Harbor"
+    place: "Postcard Journey"
   },
   {
-    image: "assets/switzerland.jpg",
+    image: "assets/banner-03.jpg",
     eyebrow: "熱門收藏每日更新",
     title: "跟著收藏榜探索靈感",
     copy: "從人氣明信片開始，發現下一張想收藏的風景。",
-    place: "Swiss Alps"
+    place: "Blooming City"
+  },
+  {
+    image: "assets/banner-04.jpg",
+    eyebrow: "舊版活動 Banner 測試",
+    title: "用舊版素材重新排版",
+    copy: "先確認輪播比例與手機裁切，再替換正式 Postoria 主視覺。",
+    place: "Archive Banner"
+  },
+  {
+    image: "assets/banner-05.jpg",
+    eyebrow: "Postoria 首頁輪播",
+    title: "更多收藏入口即將接上",
+    copy: "首頁先建立視覺與導覽，再逐步串接資料庫內容。",
+    place: "Archive Banner"
   }
 ];
 
@@ -47,18 +63,18 @@ const countries = [
 ];
 
 const cards = [
-  { title: "京都・清水寺", meta: "日本・京都", image: "assets/kyoto.jpg", likes: "2,845", views: "12,631" },
-  { title: "Positano", meta: "義大利", image: "assets/osaka.jpg", likes: "2,320", views: "9,876" },
-  { title: "California Coast", meta: "美國・加州", image: "assets/california.jpg", likes: "2,105", views: "8,542" },
-  { title: "Lauterbrunnen", meta: "瑞士", image: "assets/switzerland.jpg", likes: "1,987", views: "7,654" },
-  { title: "Aurora Night", meta: "挪威", image: "assets/norway.jpg", likes: "1,832", views: "7,103" }
+  { id: "JP-0001", title: "京都・清水寺", meta: "日本・京都", image: "assets/kyoto.jpg", likes: "2,845", views: "12,631", tags: ["日本", "京都", "寺廟"] },
+  { id: "IT-0032", title: "Positano", meta: "義大利", image: "assets/osaka.jpg", likes: "2,320", views: "9,876", tags: ["義大利", "海邊"] },
+  { id: "US-0105", title: "California Coast", meta: "美國・加州", image: "assets/california.jpg", likes: "2,105", views: "8,542", tags: ["美國", "海岸"] },
+  { id: "CH-0077", title: "Lauterbrunnen", meta: "瑞士", image: "assets/switzerland.jpg", likes: "1,987", views: "7,654", tags: ["瑞士", "山景"] },
+  { id: "NO-0012", title: "Aurora Night", meta: "挪威", image: "assets/norway.jpg", likes: "1,832", views: "7,103", tags: ["挪威", "極光"] }
 ];
 
 const latest = [
-  { title: "大阪城・春", meta: "日本・大阪", image: "assets/osaka.jpg", likes: "128" },
-  { title: "Cinque Terre", meta: "義大利", image: "assets/austria.jpg", likes: "96" },
-  { title: "Hallstatt", meta: "奧地利", image: "assets/austria.jpg", likes: "87" },
-  { title: "Iceland Aurora", meta: "冰島", image: "assets/norway.jpg", likes: "64" }
+  { id: "JP-0201", title: "大阪城・春", meta: "日本・大阪", image: "assets/osaka.jpg", likes: "128", tags: ["日本", "大阪"] },
+  { id: "IT-0119", title: "Cinque Terre", meta: "義大利", image: "assets/austria.jpg", likes: "96", tags: ["義大利", "海邊"] },
+  { id: "AT-0077", title: "Hallstatt", meta: "奧地利", image: "assets/austria.jpg", likes: "87", tags: ["奧地利", "湖景"] },
+  { id: "IS-0012", title: "Iceland Aurora", meta: "冰島", image: "assets/norway.jpg", likes: "64", tags: ["冰島", "極光"] }
 ];
 
 window.addEventListener("hashchange", render);
@@ -133,7 +149,7 @@ function renderHome() {
             <h2><span>◎</span>探索世界</h2>
             <p>依照國家與城市分類</p>
           </div>
-          <a href="#explore">查看全部 ›</a>
+          <button class="link-button" type="button" data-action="view-all" data-label="探索世界">查看全部 ›</button>
         </div>
         <div class="country-grid">
           ${countries.map(countryCard).join("")}
@@ -146,7 +162,7 @@ function renderHome() {
             <h2><span>♨</span>熱門收藏</h2>
             <p>依收藏數排序</p>
           </div>
-          <a href="#popular">查看全部 ›</a>
+          <button class="link-button" type="button" data-action="view-all" data-label="熱門收藏">查看全部 ›</button>
         </div>
         <div class="postcard-row">
           ${cards.map((card, index) => postcardCard(card, index + 1)).join("")}
@@ -159,14 +175,14 @@ function renderHome() {
             <h2><span>✦</span>最新上架</h2>
             <p>最新加入的明信片</p>
           </div>
-          <a href="#latest">查看全部 ›</a>
+          <button class="link-button" type="button" data-action="view-all" data-label="最新上架">查看全部 ›</button>
         </div>
         <div class="postcard-row compact">
           ${latest.map(newCard).join("")}
         </div>
       </section>
 
-      <section class="search-panel">
+      <section class="search-panel" id="search">
         <div class="search-title">
           <span>⌕</span>
           <div>
@@ -179,14 +195,20 @@ function renderHome() {
           <button class="solid-button" type="submit">搜尋</button>
         </form>
         <div class="tags" aria-label="熱門搜尋">
-          <span>#日本</span><span>#東京</span><span>#巴黎</span><span>#海邊</span><span>#日落</span>
+          <button type="button" data-keyword="日本">#日本</button>
+          <button type="button" data-keyword="東京">#東京</button>
+          <button type="button" data-keyword="巴黎">#巴黎</button>
+          <button type="button" data-keyword="海邊">#海邊</button>
+          <button type="button" data-keyword="日落">#日落</button>
         </div>
       </section>
 
+      ${state.search ? searchResults() : ""}
+
       <section class="feature-strip">
-        <article><span>⇧</span><h3>上傳明信片</h3><p>登入會員後即可上傳你的明信片，讓更多人看見你的世界。</p></article>
-        <article><span>♡</span><h3>收藏明信片</h3><p>收藏喜歡的明信片，建立屬於你的回憶收藏冊。</p></article>
-        <article><span>▣</span><h3>明信片評論</h3><p>分享你的旅行故事與感受，與世界交流。</p></article>
+        <article data-action="need-login" data-label="上傳明信片"><span>⇧</span><h3>上傳明信片</h3><p>登入會員後即可上傳你的明信片，讓更多人看見你的世界。</p></article>
+        <article data-action="show-favorites"><span>♡</span><h3>收藏明信片</h3><p>收藏喜歡的明信片，建立屬於你的回憶收藏冊。</p></article>
+        <article data-action="need-login" data-label="明信片評論"><span>▣</span><h3>明信片評論</h3><p>分享你的旅行故事與感受，與世界交流。</p></article>
         <aside>
           <h3>加入我們</h3>
           <p>登入或註冊會員，開始收藏與分享。</p>
@@ -238,6 +260,7 @@ function countryCard([name, english, count, image]) {
 }
 
 function postcardCard(card, rank) {
+  const active = state.favorites.includes(card.id);
   return `
     <article class="postcard-card">
       <span class="rank">${rank}</span>
@@ -245,13 +268,17 @@ function postcardCard(card, rank) {
       <div>
         <h3>${card.title}</h3>
         <p>${card.meta}</p>
-        <footer><span>♡ ${card.likes}</span><span>◎ ${card.views}</span></footer>
+        <footer>
+          <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${card.id}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button>
+          <span>◎ ${card.views}</span>
+        </footer>
       </div>
     </article>
   `;
 }
 
 function newCard(card) {
+  const active = state.favorites.includes(card.id);
   return `
     <article class="postcard-card new">
       <span class="new-badge">NEW</span>
@@ -259,9 +286,45 @@ function newCard(card) {
       <div>
         <h3>${card.title}</h3>
         <p>${card.meta}</p>
-        <footer><span>♡ ${card.likes}</span></footer>
+        <footer><button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${card.id}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button></footer>
       </div>
     </article>
+  `;
+}
+
+function searchResults() {
+  const keyword = state.search.toLowerCase();
+  const allCards = [...cards, ...latest];
+  const results = allCards.filter(card => {
+    const text = [card.id, card.title, card.meta, ...(card.tags || [])].join(" ").toLowerCase();
+    return text.includes(keyword);
+  });
+
+  return `
+    <section class="section-block search-results">
+      <div class="section-heading">
+        <div>
+          <h2><span>⌕</span>搜尋結果</h2>
+          <p>「${state.search}」共 ${results.length} 張明信片</p>
+        </div>
+        <button class="link-button" type="button" data-action="clear-search">清除搜尋</button>
+      </div>
+      <div class="result-list">
+        ${(results.length ? results : allCards.slice(0, 3)).map((card, index) => `
+          <article class="result-card">
+            <img src="${card.image}" alt="${card.title}">
+            <div>
+              <h3>${card.title}</h3>
+              <p>編號：${card.id}</p>
+              <small>${card.meta}　#${(card.tags || []).join(" #")}</small>
+            </div>
+            <button type="button" class="favorite-button ${state.favorites.includes(card.id) ? "active" : ""}" data-favorite="${card.id}">
+              ${state.favorites.includes(card.id) ? "♥" : "♡"}
+            </button>
+          </article>
+        `).join("")}
+      </div>
+    </section>
   `;
 }
 
@@ -428,7 +491,15 @@ async function handleSubmit(event) {
   if (searchForm) {
     event.preventDefault();
     const keyword = new FormData(searchForm).get("keyword")?.toString().trim();
-    showToast(keyword ? `已搜尋「${keyword}」` : "請輸入搜尋關鍵字");
+    if (!keyword) {
+      showToast("請輸入搜尋關鍵字");
+      return;
+    }
+    state.search = keyword.replace(/^#/, "");
+    if ((location.hash || "#home") !== "#home") location.hash = "home";
+    render();
+    requestAnimationFrame(() => document.querySelector("#search")?.scrollIntoView({ behavior: "smooth" }));
+    showToast(`已搜尋「${keyword}」`);
     return;
   }
 
@@ -520,6 +591,49 @@ function handleClick(event) {
       mobileMenu.setAttribute("aria-hidden", "true");
     }
   }
+
+  const keyword = event.target.closest("[data-keyword]");
+  if (keyword) {
+    state.search = keyword.dataset.keyword;
+    render();
+    requestAnimationFrame(() => document.querySelector("#search")?.scrollIntoView({ behavior: "smooth" }));
+    return;
+  }
+
+  const favorite = event.target.closest("[data-favorite]");
+  if (favorite) {
+    const id = favorite.dataset.favorite;
+    state.favorites = state.favorites.includes(id)
+      ? state.favorites.filter(item => item !== id)
+      : [...state.favorites, id];
+    localStorage.setItem("postoria-favorites", JSON.stringify(state.favorites));
+    render();
+    showToast(state.favorites.includes(id) ? "已加入收藏" : "已移除收藏");
+    return;
+  }
+
+  const action = event.target.closest("[data-action]");
+  if (action?.dataset.action === "clear-search") {
+    state.search = "";
+    render();
+    return;
+  }
+
+  if (action?.dataset.action === "view-all") {
+    showToast(`${action.dataset.label}列表 API 尚未串接，先保留首頁預覽資料。`);
+    return;
+  }
+
+  if (action?.dataset.action === "show-favorites") {
+    const count = state.favorites.length;
+    showToast(count ? `目前已收藏 ${count} 張明信片` : "你尚未收藏明信片");
+    return;
+  }
+
+  if (action?.dataset.action === "need-login") {
+    showToast(`${action.dataset.label}需登入會員後使用`);
+    location.hash = "login";
+  }
 }
 
 function render() {
@@ -540,10 +654,10 @@ function render() {
     app.innerHTML = renderHome();
     if (["explore", "popular", "latest"].includes(route)) {
       requestAnimationFrame(() => document.querySelector(`#${route}`)?.scrollIntoView({ block: "start" }));
+    } else {
+      window.scrollTo({ top: 0, behavior: "instant" });
     }
   }
-
-  window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 render();

@@ -398,9 +398,17 @@ img {
   font-size: 14px;
 }
 
-.section-heading a {
+.section-heading a,
+.link-button {
   color: var(--teal-dark);
   font-weight: 800;
+}
+
+.link-button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .country-grid,
@@ -476,10 +484,24 @@ img {
 .postcard-card footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 12px;
   margin-top: 12px;
   color: #2a4552;
   font-size: 14px;
+}
+
+.favorite-button {
+  border: 0;
+  padding: 0;
+  color: #2a4552;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.favorite-button.active {
+  color: #d95b43;
 }
 
 .rank,
@@ -553,13 +575,65 @@ img {
   gap: 8px;
 }
 
-.tags span {
+.tags span,
+.tags button {
   padding: 7px 12px;
+  border: 0;
   border-radius: 999px;
   color: var(--teal-dark);
   background: #e7f2f2;
   font-weight: 700;
   font-size: 13px;
+  cursor: pointer;
+}
+
+  .search-results {
+    scroll-margin-top: 120px;
+  }
+
+  .result-card {
+    grid-template-columns: 82px 1fr auto;
+  }
+
+  .result-card img {
+    width: 82px;
+    height: 72px;
+  }
+
+.result-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.result-card {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.result-card img {
+  width: 96px;
+  height: 78px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.result-card h3,
+.result-card p {
+  margin: 0;
+}
+
+.result-card small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 .feature-strip {
@@ -573,6 +647,7 @@ img {
 .feature-strip article {
   padding: 28px;
   border-right: 1px solid var(--line);
+  cursor: pointer;
 }
 
 .feature-strip article span {
@@ -917,6 +992,7 @@ img {
   }
 
   .search-panel,
+  .result-list,
   .feature-strip,
   .site-footer,
   .auth-layout {
