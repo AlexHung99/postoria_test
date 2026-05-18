@@ -3,52 +3,69 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Postoria 會員登入</title>
-  <meta name="description" content="Postoria 會員登入、註冊與忘記密碼測試頁">
+  <title>Postoria 明信片收藏</title>
+  <meta name="description" content="Postoria 是收藏、探索與分享世界明信片的社群平台。">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="topbar" aria-label="Postoria 導覽">
-    <a class="brand" href="#login" aria-label="Postoria 首頁">
-      <span class="logo" aria-hidden="true">
-        <span class="logo-star">✦</span>
-        <span class="logo-wave"></span>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="Postoria 首頁">
+      <span class="brand-mark" aria-hidden="true">
+        <span class="brand-star">✦</span>
+        <span class="brand-wave"></span>
       </span>
-      <span>
+      <span class="brand-copy">
         <strong>POSTORIA</strong>
         <small>COLLECT MOMENTS, SHARE THE WORLD.</small>
       </span>
     </a>
+
     <nav class="desktop-nav" aria-label="主要導覽">
-      <a href="#login">探索世界</a>
-      <a href="#login">熱門收藏</a>
-      <a href="#login">收藏喜愛</a>
+      <a href="#explore" data-scroll="explore"><span>◎</span>探索世界</a>
+      <a href="#popular" data-scroll="popular"><span>♨</span>熱門收藏</a>
+      <a href="#latest" data-scroll="latest"><span>♡</span>收藏喜愛</a>
     </nav>
-    <div class="desktop-tools">
-      <label class="search">
-        <input type="search" placeholder="搜尋標題、標籤、#hashtag..." aria-label="搜尋">
-        <span>⌕</span>
-      </label>
-      <button class="icon-button" type="button" aria-label="通知">♧<b>2</b></button>
-      <button class="profile-button" type="button">
-        <span class="avatar" aria-hidden="true"></span>
-        你好，Postorian⌄
+
+    <form class="header-search" data-search>
+      <input name="keyword" type="search" placeholder="搜尋標題、編號、#hashtag" aria-label="搜尋明信片">
+      <button type="submit" aria-label="搜尋">⌕</button>
+    </form>
+
+    <div class="header-actions">
+      <a class="ghost-button" href="#login">登入</a>
+      <a class="solid-button" href="#register">註冊會員</a>
+      <button class="menu-toggle" type="button" aria-label="開啟選單" data-menu-toggle>
+        <span></span><span></span><span></span>
       </button>
     </div>
   </header>
 
+  <aside class="mobile-menu" data-mobile-menu aria-hidden="true">
+    <button class="menu-close" type="button" aria-label="關閉選單" data-menu-toggle>×</button>
+    <a class="brand mobile-brand" href="#home">
+      <span class="brand-mark" aria-hidden="true"><span class="brand-star">✦</span><span class="brand-wave"></span></span>
+      <span class="brand-copy"><strong>POSTORIA</strong></span>
+    </a>
+    <nav aria-label="手機導覽">
+      <a href="#explore" data-scroll="explore">◎ 探索世界</a>
+      <a href="#popular" data-scroll="popular">♨ 熱門收藏</a>
+      <a href="#latest" data-scroll="latest">♡ 收藏喜愛</a>
+      <a href="#upload">⇧ 上傳明信片</a>
+      <a href="#comments">▣ 明信片評論</a>
+      <a href="#login">登入</a>
+      <a class="solid-button" href="#register">註冊會員</a>
+    </nav>
+  </aside>
+
   <main id="app" class="app" aria-live="polite"></main>
 
-  <footer class="site-footer">
-    <nav aria-label="頁尾連結">
-      <a href="#login">關於我們</a>
-      <a href="#login">聯絡我們</a>
-      <a href="#login">服務條款</a>
-      <a href="#login">隱私政策</a>
-      <a href="#login">幫助中心</a>
-    </nav>
-    <p>© 2026 Postoria. All rights reserved.</p>
-  </footer>
+  <nav class="bottom-nav" aria-label="手機底部導覽">
+    <a href="#home">⌂<span>首頁</span></a>
+    <a href="#explore" data-scroll="explore">⌕<span>探索世界</span></a>
+    <a href="#popular" data-scroll="popular">♨<span>熱門收藏</span></a>
+    <a href="#latest" data-scroll="latest">♡<span>收藏喜愛</span></a>
+    <a href="#login">●<span>會員專區</span></a>
+  </nav>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>

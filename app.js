@@ -5,15 +5,71 @@ const API_BASE = localStorage.getItem("postoria-api-base") || defaultApiBase;
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
+const mobileMenu = document.querySelector("[data-mobile-menu]");
 
 const state = {
   member: readJson("postoria-member"),
-  token: localStorage.getItem("postoria-token") || ""
+  token: localStorage.getItem("postoria-token") || "",
+  slide: 0
 };
+
+const heroSlides = [
+  {
+    image: "assets/hero-sunset.jpg",
+    eyebrow: "來自世界各地的明信片",
+    title: "收藏美好時刻，分享世界",
+    copy: "探索旅人的回憶，整理自己的收藏，讓每張明信片都有故事。",
+    place: "Hokkaido Sunset"
+  },
+  {
+    image: "assets/hongkong.jpg",
+    eyebrow: "城市風景與旅途片段",
+    title: "把遠方，收進你的收藏",
+    copy: "用標籤、城市與國家分類，快速找到想看的明信片。",
+    place: "Hong Kong Harbor"
+  },
+  {
+    image: "assets/switzerland.jpg",
+    eyebrow: "熱門收藏每日更新",
+    title: "跟著收藏榜探索靈感",
+    copy: "從人氣明信片開始，發現下一張想收藏的風景。",
+    place: "Swiss Alps"
+  }
+];
+
+const countries = [
+  ["日本", "JAPAN", "1,250 張明信片", "assets/kyoto.jpg"],
+  ["希臘", "GREECE", "987 張明信片", "assets/hero-sunset.jpg"],
+  ["美國", "UNITED STATES", "2,356 張明信片", "assets/california.jpg"],
+  ["法國", "FRANCE", "1,102 張明信片", "assets/hongkong.jpg"],
+  ["義大利", "ITALY", "1,675 張明信片", "assets/osaka.jpg"],
+  ["瑞士", "SWITZERLAND", "743 張明信片", "assets/switzerland.jpg"]
+];
+
+const cards = [
+  { title: "京都・清水寺", meta: "日本・京都", image: "assets/kyoto.jpg", likes: "2,845", views: "12,631" },
+  { title: "Positano", meta: "義大利", image: "assets/osaka.jpg", likes: "2,320", views: "9,876" },
+  { title: "California Coast", meta: "美國・加州", image: "assets/california.jpg", likes: "2,105", views: "8,542" },
+  { title: "Lauterbrunnen", meta: "瑞士", image: "assets/switzerland.jpg", likes: "1,987", views: "7,654" },
+  { title: "Aurora Night", meta: "挪威", image: "assets/norway.jpg", likes: "1,832", views: "7,103" }
+];
+
+const latest = [
+  { title: "大阪城・春", meta: "日本・大阪", image: "assets/osaka.jpg", likes: "128" },
+  { title: "Cinque Terre", meta: "義大利", image: "assets/austria.jpg", likes: "96" },
+  { title: "Hallstatt", meta: "奧地利", image: "assets/austria.jpg", likes: "87" },
+  { title: "Iceland Aurora", meta: "冰島", image: "assets/norway.jpg", likes: "64" }
+];
 
 window.addEventListener("hashchange", render);
 document.addEventListener("submit", handleSubmit);
 document.addEventListener("click", handleClick);
+
+setInterval(() => {
+  if ((location.hash || "#home") !== "#home") return;
+  state.slide = (state.slide + 1) % heroSlides.length;
+  renderHeroOnly();
+}, 5200);
 
 function readJson(key) {
   try {
@@ -59,21 +115,179 @@ async function apiPost(path, payload) {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
   if (!response.ok) {
-    throw new Error(data?.message || data?.title || "請稍後再試。");
+    throw new Error(data?.message || data?.title || "API 請求失敗，請稍後再試。");
   }
   return data;
 }
 
-function externalUrl(provider) {
-  const returnUrl = `${location.origin}${location.pathname}#login-success`;
-  return `${API_BASE}/api/external-auth/${provider}/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+function renderHome() {
+  return `
+    <section class="home-shell">
+      <div class="hero" id="hero">
+        ${heroMarkup()}
+      </div>
+
+      <section class="section-block" id="explore">
+        <div class="section-heading">
+          <div>
+            <h2><span>◎</span>探索世界</h2>
+            <p>依照國家與城市分類</p>
+          </div>
+          <a href="#explore">查看全部 ›</a>
+        </div>
+        <div class="country-grid">
+          ${countries.map(countryCard).join("")}
+        </div>
+      </section>
+
+      <section class="section-block" id="popular">
+        <div class="section-heading">
+          <div>
+            <h2><span>♨</span>熱門收藏</h2>
+            <p>依收藏數排序</p>
+          </div>
+          <a href="#popular">查看全部 ›</a>
+        </div>
+        <div class="postcard-row">
+          ${cards.map((card, index) => postcardCard(card, index + 1)).join("")}
+        </div>
+      </section>
+
+      <section class="section-block" id="latest">
+        <div class="section-heading">
+          <div>
+            <h2><span>✦</span>最新上架</h2>
+            <p>最新加入的明信片</p>
+          </div>
+          <a href="#latest">查看全部 ›</a>
+        </div>
+        <div class="postcard-row compact">
+          ${latest.map(newCard).join("")}
+        </div>
+      </section>
+
+      <section class="search-panel">
+        <div class="search-title">
+          <span>⌕</span>
+          <div>
+            <h2>查詢明信片</h2>
+            <p>可搜尋標題、編號或 #hashtag</p>
+          </div>
+        </div>
+        <form data-search class="search-box">
+          <input name="keyword" type="search" placeholder="搜尋標題、編號、#hashtag">
+          <button class="solid-button" type="submit">搜尋</button>
+        </form>
+        <div class="tags" aria-label="熱門搜尋">
+          <span>#日本</span><span>#東京</span><span>#巴黎</span><span>#海邊</span><span>#日落</span>
+        </div>
+      </section>
+
+      <section class="feature-strip">
+        <article><span>⇧</span><h3>上傳明信片</h3><p>登入會員後即可上傳你的明信片，讓更多人看見你的世界。</p></article>
+        <article><span>♡</span><h3>收藏明信片</h3><p>收藏喜歡的明信片，建立屬於你的回憶收藏冊。</p></article>
+        <article><span>▣</span><h3>明信片評論</h3><p>分享你的旅行故事與感受，與世界交流。</p></article>
+        <aside>
+          <h3>加入我們</h3>
+          <p>登入或註冊會員，開始收藏與分享。</p>
+          <a class="light-button" href="#register">立即登入 / 註冊 →</a>
+        </aside>
+      </section>
+
+      ${siteFooter()}
+    </section>
+  `;
+}
+
+function heroMarkup() {
+  const slide = heroSlides[state.slide];
+  return `
+    <img src="${slide.image}" alt="${slide.place}">
+    <div class="hero-shade"></div>
+    <button class="hero-arrow prev" type="button" data-slide="-1" aria-label="上一張">‹</button>
+    <div class="hero-copy">
+      <p>${slide.eyebrow}</p>
+      <h1>${slide.title}</h1>
+      <span>${slide.copy}</span>
+      <a class="gold-button" href="#explore" data-scroll="explore">開始探索 ↗</a>
+    </div>
+    <div class="stamp-card" aria-hidden="true">
+      <b>POSTORIA</b>
+      <strong>15</strong>
+      <small>${slide.place}</small>
+    </div>
+    <button class="hero-arrow next" type="button" data-slide="1" aria-label="下一張">›</button>
+    <div class="hero-dots">
+      ${heroSlides.map((_, index) => `<button type="button" data-dot="${index}" class="${index === state.slide ? "active" : ""}" aria-label="切換到第 ${index + 1} 張"></button>`).join("")}
+    </div>
+  `;
+}
+
+function renderHeroOnly() {
+  const hero = document.querySelector("#hero");
+  if (hero) hero.innerHTML = heroMarkup();
+}
+
+function countryCard([name, english, count, image]) {
+  return `
+    <article class="country-card">
+      <img src="${image}" alt="${name}">
+      <div><h3>${name}</h3><small>${english}</small><p>${count}</p></div>
+    </article>
+  `;
+}
+
+function postcardCard(card, rank) {
+  return `
+    <article class="postcard-card">
+      <span class="rank">${rank}</span>
+      <img src="${card.image}" alt="${card.title}">
+      <div>
+        <h3>${card.title}</h3>
+        <p>${card.meta}</p>
+        <footer><span>♡ ${card.likes}</span><span>◎ ${card.views}</span></footer>
+      </div>
+    </article>
+  `;
+}
+
+function newCard(card) {
+  return `
+    <article class="postcard-card new">
+      <span class="new-badge">NEW</span>
+      <img src="${card.image}" alt="${card.title}">
+      <div>
+        <h3>${card.title}</h3>
+        <p>${card.meta}</p>
+        <footer><span>♡ ${card.likes}</span></footer>
+      </div>
+    </article>
+  `;
+}
+
+function siteFooter() {
+  return `
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <span class="brand-mark" aria-hidden="true"><span class="brand-star">✦</span><span class="brand-wave"></span></span>
+        <div><strong>POSTORIA</strong><small>COLLECT MOMENTS, SHARE THE WORLD.</small></div>
+      </div>
+      <nav>
+        <a href="#explore">探索世界</a>
+        <a href="#popular">熱門收藏</a>
+        <a href="#latest">我的收藏</a>
+        <a href="#login">會員專區</a>
+      </nav>
+      <p>© 2026 Postoria. All rights reserved.</p>
+    </footer>
+  `;
 }
 
 function logo() {
   return `
-    <span class="logo" aria-hidden="true">
-      <span class="logo-star">✦</span>
-      <span class="logo-wave"></span>
+    <span class="brand-mark auth-logo" aria-hidden="true">
+      <span class="brand-star">✦</span>
+      <span class="brand-wave"></span>
     </span>
     <p class="wordmark">POSTORIA</p>
   `;
@@ -83,38 +297,20 @@ function field({ icon, name, type = "text", placeholder, autocomplete = "", requ
   const password = type === "password";
   return `
     <label class="field">
-      <span class="field-icon" aria-hidden="true">${icon}</span>
-      <input
-        name="${name}"
-        type="${type}"
-        placeholder="${placeholder}"
-        ${autocomplete ? `autocomplete="${autocomplete}"` : ""}
-        ${required ? "required" : ""}
-      >
-      ${password ? `<button class="toggle-password" type="button" aria-label="顯示或隱藏密碼">⊘</button>` : ""}
+      <span aria-hidden="true">${icon}</span>
+      <input name="${name}" type="${type}" placeholder="${placeholder}" ${autocomplete ? `autocomplete="${autocomplete}"` : ""} ${required ? "required" : ""}>
+      ${password ? `<button class="toggle-password" type="button" aria-label="顯示或隱藏密碼">◌</button>` : ""}
     </label>
-  `;
-}
-
-function socialButtons(action) {
-  return `
-    <div class="divider">或使用以下方式${action}</div>
-    <div class="socials">
-      <a class="social-button google" href="${externalUrl("google")}" aria-label="使用 Google ${action}">G</a>
-      <a class="social-button facebook" href="${externalUrl("facebook")}" aria-label="使用 Facebook ${action}">f</a>
-      <a class="social-button apple" href="#login" aria-label="Apple 尚未開放">●</a>
-    </div>
   `;
 }
 
 function authShell(card, showNotice = true) {
   return `
     <section class="auth-layout">
-      <aside class="welcome" aria-label="歡迎訊息">
+      <aside class="welcome">
         <span class="sparkle">✦</span>
         <h1>歡迎回來！</h1>
-        <p>登入以繼續探索世界的明信片，<br>收藏美好時刻，分享你的故事。</p>
-        <span class="paper-plane" aria-hidden="true"></span>
+        <p>登入以繼續探索世界的明信片，收藏美好時刻，分享你的故事。</p>
       </aside>
       <div class="auth-stack">
         ${card}
@@ -127,15 +323,14 @@ function authShell(card, showNotice = true) {
 function notice() {
   return `
     <aside class="notice">
-      <span class="notice-icon" aria-hidden="true">♧</span>
+      <span>♢</span>
       <div>
         <h3>貼心提醒</h3>
         <ul>
-          <li>請確認信箱（包含垃圾郵件匣）以收到重設連結信件。</li>
-          <li>如未收到信件，可嘗試重新發送或與我們聯繫。</li>
+          <li>請確認信箱可收信，以收到重設密碼信件。</li>
+          <li>目前第三方登入仍待 HTTPS 測試環境完成後再開放。</li>
         </ul>
       </div>
-      <span class="sparkle" aria-hidden="true">✦</span>
     </aside>
   `;
 }
@@ -143,7 +338,7 @@ function notice() {
 function loginCard() {
   return `
     <article class="auth-card">
-      <button class="back-button" type="button" data-back aria-label="返回">‹</button>
+      <a class="back-link" href="#home">← 回首頁</a>
       ${logo()}
       <h2>登入</h2>
       <p class="subtitle">還沒有帳號？ <a href="#register">立即註冊</a></p>
@@ -151,14 +346,13 @@ function loginCard() {
         ${field({ icon: "✉", name: "email", type: "email", placeholder: "電子郵件地址", autocomplete: "email" })}
         ${field({ icon: "▣", name: "password", type: "password", placeholder: "密碼", autocomplete: "current-password" })}
         <div class="form-row">
-          <label class="check"><input name="remember" type="checkbox">記住我</label>
+          <label class="check"><input name="remember" type="checkbox"> 記住我</label>
           <a class="text-link" href="#forgot">忘記密碼？</a>
         </div>
         <button class="primary-button" type="submit">登入</button>
         <p class="status"></p>
       </form>
-      ${socialButtons("登入")}
-      <p class="switch-line">還沒有帳號？ <a class="text-link" href="#register">立即註冊</a></p>
+      <p class="switch-line">測試階段請先使用電子郵件登入。</p>
     </article>
   `;
 }
@@ -166,12 +360,12 @@ function loginCard() {
 function registerCard() {
   return `
     <article class="auth-card">
-      <button class="back-button" type="button" data-back aria-label="返回">‹</button>
+      <a class="back-link" href="#home">← 回首頁</a>
       ${logo()}
       <h2>註冊會員</h2>
       <p class="subtitle">加入我們，收藏美好時刻，分享世界！</p>
       <form class="auth-form" data-form="register">
-        ${field({ icon: "♙", name: "displayName", placeholder: "用戶名稱", autocomplete: "name" })}
+        ${field({ icon: "○", name: "displayName", placeholder: "用戶名稱", autocomplete: "name" })}
         ${field({ icon: "✉", name: "email", type: "email", placeholder: "電子郵件", autocomplete: "email" })}
         ${field({ icon: "▣", name: "password", type: "password", placeholder: "密碼", autocomplete: "new-password" })}
         ${field({ icon: "▣", name: "confirmPassword", type: "password", placeholder: "確認密碼", autocomplete: "new-password" })}
@@ -182,7 +376,6 @@ function registerCard() {
         <button class="primary-button" type="submit">註冊</button>
         <p class="status"></p>
       </form>
-      ${socialButtons("註冊")}
       <p class="switch-line">已經有帳號？ <a class="text-link" href="#login">立即登入</a></p>
     </article>
   `;
@@ -191,60 +384,54 @@ function registerCard() {
 function forgotCard(sent = false) {
   if (sent) {
     return `
-      <div class="auth-stack">
-        <article class="success-card">
-          <span class="success-mark" aria-hidden="true">✓</span>
-          <div>
-            <h2>重設連結已發送！</h2>
-            <p>我們已將重設密碼的連結發送至您的電子郵件，請檢查您的信箱。</p>
-            <a class="outline-button" href="#login">返回登入</a>
-          </div>
-        </article>
-      </div>
+      <article class="success-card">
+        <span class="success-mark" aria-hidden="true">✓</span>
+        <div>
+          <h2>重設連結已發送！</h2>
+          <p>我們已將重設密碼的連結發送至您的電子郵件，請檢查您的信箱。</p>
+          <a class="outline-button" href="#login">返回登入</a>
+        </div>
+      </article>
     `;
   }
 
   return `
     <article class="auth-card">
-      <button class="back-button" type="button" data-back aria-label="返回">‹</button>
+      <a class="back-link" href="#login">← 返回登入</a>
       ${logo()}
       <h2>忘記密碼？</h2>
       <p class="subtitle">請輸入您的電子郵件，我們將發送重設密碼的連結給您。</p>
-      <div class="forgot-visual" aria-hidden="true"><span class="envelope"></span></div>
       <form class="auth-form" data-form="forgot">
         ${field({ icon: "✉", name: "email", type: "email", placeholder: "電子郵件", autocomplete: "email" })}
         <button class="primary-button" type="submit">發送重設連結</button>
         <p class="status"></p>
       </form>
-      <p class="switch-line"><a class="text-link" href="#login">返回登入</a></p>
     </article>
   `;
 }
 
 function renderLoginSuccess() {
-  return `
-    <section class="auth-layout">
-      <aside class="welcome">
-        <span class="sparkle">✦</span>
-        <h1>歡迎回來！</h1>
-        <p>${state.member?.displayName || state.member?.email || "Postorian"}，祝你今天也收藏到好故事。</p>
-      </aside>
-      <div class="auth-stack">
-        <article class="success-card">
-          <span class="success-mark" aria-hidden="true">✓</span>
-          <div>
-            <h2>登入成功</h2>
-            <p>會員 Token 已儲存在瀏覽器，可接續呼叫需要登入的 API。</p>
-            <a class="outline-button" href="#login">回到登入頁</a>
-          </div>
-        </article>
-        ${notice()}
+  return authShell(`
+    <article class="success-card">
+      <span class="success-mark" aria-hidden="true">✓</span>
+      <div>
+        <h2>登入成功</h2>
+        <p>${state.member?.displayName || state.member?.email || "Postorian"}，歡迎回到 Postoria。</p>
+        <a class="outline-button" href="#home">回到首頁</a>
       </div>
-    </section>
-  `;
+    </article>
+  `, true);
 }
 
 async function handleSubmit(event) {
+  const searchForm = event.target.closest("form[data-search]");
+  if (searchForm) {
+    event.preventDefault();
+    const keyword = new FormData(searchForm).get("keyword")?.toString().trim();
+    showToast(keyword ? `已搜尋「${keyword}」` : "請輸入搜尋關鍵字");
+    return;
+  }
+
   const form = event.target.closest("form[data-form]");
   if (!form) return;
   event.preventDefault();
@@ -260,7 +447,6 @@ async function handleSubmit(event) {
         password: values.password
       });
       setSession(result.member, result.accessToken, result.expiresAt);
-      setStatus(form, "登入成功，正在進入會員頁。");
       showToast("登入成功");
       location.hash = "login-success";
     }
@@ -274,8 +460,7 @@ async function handleSubmit(event) {
         password: values.password,
         displayName: values.displayName
       });
-      setStatus(form, "註冊成功，請使用新帳號登入。");
-      showToast("註冊成功");
+      showToast("註冊成功，請登入");
       location.hash = "login";
     }
 
@@ -294,6 +479,29 @@ async function handleSubmit(event) {
 }
 
 function handleClick(event) {
+  const menuToggle = event.target.closest("[data-menu-toggle]");
+  if (menuToggle) {
+    const open = !mobileMenu.classList.contains("open");
+    mobileMenu.classList.toggle("open", open);
+    mobileMenu.setAttribute("aria-hidden", String(!open));
+    return;
+  }
+
+  const slideButton = event.target.closest("[data-slide]");
+  if (slideButton) {
+    const delta = Number(slideButton.dataset.slide);
+    state.slide = (state.slide + delta + heroSlides.length) % heroSlides.length;
+    renderHeroOnly();
+    return;
+  }
+
+  const dot = event.target.closest("[data-dot]");
+  if (dot) {
+    state.slide = Number(dot.dataset.dot);
+    renderHeroOnly();
+    return;
+  }
+
   const toggle = event.target.closest(".toggle-password");
   if (toggle) {
     const input = toggle.closest(".field").querySelector("input");
@@ -301,29 +509,41 @@ function handleClick(event) {
     return;
   }
 
-  if (event.target.closest("[data-back]")) {
-    history.length > 1 ? history.back() : location.hash = "login";
+  const scrollLink = event.target.closest("[data-scroll]");
+  if (scrollLink) {
+    const target = document.querySelector(`#${scrollLink.dataset.scroll}`);
+    if (target) {
+      event.preventDefault();
+      location.hash = scrollLink.dataset.scroll;
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      mobileMenu.classList.remove("open");
+      mobileMenu.setAttribute("aria-hidden", "true");
+    }
   }
 }
 
 function render() {
-  const route = location.hash.replace("#", "") || "login";
+  const route = location.hash.replace("#", "") || "home";
   if (route !== "forgot") {
     sessionStorage.removeItem("postoria-reset-sent");
   }
 
-  if (route === "register") {
+  if (route === "login") {
+    app.innerHTML = authShell(loginCard());
+  } else if (route === "register") {
     app.innerHTML = authShell(registerCard());
   } else if (route === "forgot") {
-    const sent = sessionStorage.getItem("postoria-reset-sent") === "1";
-    app.innerHTML = authShell(forgotCard(sent), !sent);
+    app.innerHTML = authShell(forgotCard(sessionStorage.getItem("postoria-reset-sent") === "1"));
   } else if (route === "login-success") {
     app.innerHTML = renderLoginSuccess();
   } else {
-    app.innerHTML = authShell(loginCard());
+    app.innerHTML = renderHome();
+    if (["explore", "popular", "latest"].includes(route)) {
+      requestAnimationFrame(() => document.querySelector(`#${route}`)?.scrollIntoView({ block: "start" }));
+    }
   }
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: "instant" });
 }
 
 render();
