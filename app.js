@@ -225,19 +225,7 @@ function heroMarkup() {
   const slide = heroSlides[state.slide];
   return `
     <img src="${slide.image}" alt="${slide.place}">
-    <div class="hero-shade"></div>
     <button class="hero-arrow prev" type="button" data-slide="-1" aria-label="上一張">‹</button>
-    <div class="hero-copy">
-      <p>${slide.eyebrow}</p>
-      <h1>${slide.title}</h1>
-      <span>${slide.copy}</span>
-      <a class="gold-button" href="#explore" data-scroll="explore">開始探索 ↗</a>
-    </div>
-    <div class="stamp-card" aria-hidden="true">
-      <b>POSTORIA</b>
-      <strong>15</strong>
-      <small>${slide.place}</small>
-    </div>
     <button class="hero-arrow next" type="button" data-slide="1" aria-label="下一張">›</button>
     <div class="hero-dots">
       ${heroSlides.map((_, index) => `<button type="button" data-dot="${index}" class="${index === state.slide ? "active" : ""}" aria-label="切換到第 ${index + 1} 張"></button>`).join("")}
