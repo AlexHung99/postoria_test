@@ -12,7 +12,10 @@ const state = {
   token: localStorage.getItem("postoria-token") || "",
   slide: 0,
   search: "",
-  favorites: readJson("postoria-favorites") || []
+  favorites: readJson("postoria-favorites") || [],
+  home: null,
+  homeLoading: false,
+  homeError: ""
 };
 
 const heroSlides = [
@@ -83,7 +86,8 @@ document.addEventListener("click", handleClick);
 
 setInterval(() => {
   if ((location.hash || "#home") !== "#home") return;
-  state.slide = (state.slide + 1) % heroSlides.length;
+  const slideCount = (state.home?.banners || heroSlides).length;
+  state.slide = (state.slide + 1) % slideCount;
   renderHeroOnly();
 }, 5200);
 
@@ -101,6 +105,60 @@ function setSession(member, token, expiresAt) {
   localStorage.setItem("postoria-member", JSON.stringify(member));
   localStorage.setItem("postoria-token", token);
   localStorage.setItem("postoria-token-expires-at", expiresAt || "");
+}
+
+async function loadHomeData() {
+  if (state.homeLoading || state.home) return;
+  state.homeLoading = true;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/postoria/home`);
+    if (!response.ok) {
+      throw new Error(`home api ${response.status}`);
+    }
+
+    state.home = normalizeHomeData(await response.json());
+    state.homeError = "";
+    render();
+  } catch {
+    state.homeError = "目前無法讀取 API，先顯示首頁預覽資料。";
+  } finally {
+    state.homeLoading = false;
+  }
+}
+
+function normalizeHomeData(data) {
+  const banners = (data.banners || [])
+    .filter(item => item.imageUrl)
+    .map(item => ({
+      image: item.imageUrl,
+      place: item.title || "Postoria"
+    }));
+
+  return {
+    banners: banners.length ? banners : heroSlides,
+    countries: (data.countries || []).map(item => [
+      item.name,
+      item.englishName || item.name,
+      `${Number(item.count || 0).toLocaleString()} 張明信片`,
+      item.imageUrl || "assets/hero-sunset.jpg"
+    ]),
+    popular: (data.popular || []).map(mapApiPostcard),
+    latest: (data.latest || []).map(mapApiPostcard)
+  };
+}
+
+function mapApiPostcard(item) {
+  return {
+    id: item.legacyId || item.id,
+    title: item.title,
+    meta: [item.country, item.city].filter(Boolean).join("・"),
+    image: item.imageUrl || "assets/hero-sunset.jpg",
+    likes: Number(item.likeCount || 0).toLocaleString(),
+    views: Number(item.viewCount || 0).toLocaleString(),
+    tags: item.tags || [],
+    legacyNumber: item.legacyNumber
+  };
 }
 
 function showToast(message) {
@@ -137,11 +195,21 @@ async function apiPost(path, payload) {
 }
 
 function renderHome() {
+  const home = state.home || {
+    banners: heroSlides,
+    countries,
+    popular: cards,
+    latest
+  };
+  const activeBanners = home.banners.length ? home.banners : heroSlides;
+  state.slide = state.slide % activeBanners.length;
+
   return `
     <section class="home-shell">
       <div class="hero" id="hero">
-        ${heroMarkup()}
+        ${heroMarkup(activeBanners)}
       </div>
+      ${state.homeError ? `<p class="api-note">${state.homeError}</p>` : ""}
 
       <section class="section-block" id="explore">
         <div class="section-heading">
@@ -152,7 +220,7 @@ function renderHome() {
           <button class="link-button" type="button" data-action="view-all" data-label="探索世界">查看全部 ›</button>
         </div>
         <div class="country-grid">
-          ${countries.map(countryCard).join("")}
+          ${home.countries.map(countryCard).join("")}
         </div>
       </section>
 
@@ -165,7 +233,7 @@ function renderHome() {
           <button class="link-button" type="button" data-action="view-all" data-label="熱門收藏">查看全部 ›</button>
         </div>
         <div class="postcard-row">
-          ${cards.map((card, index) => postcardCard(card, index + 1)).join("")}
+          ${home.popular.map((card, index) => postcardCard(card, index + 1)).join("")}
         </div>
       </section>
 
@@ -178,7 +246,7 @@ function renderHome() {
           <button class="link-button" type="button" data-action="view-all" data-label="最新上架">查看全部 ›</button>
         </div>
         <div class="postcard-row compact">
-          ${latest.map(newCard).join("")}
+          ${home.latest.map(newCard).join("")}
         </div>
       </section>
 
@@ -221,14 +289,14 @@ function renderHome() {
   `;
 }
 
-function heroMarkup() {
-  const slide = heroSlides[state.slide];
+function heroMarkup(slides = (state.home?.banners || heroSlides)) {
+  const slide = slides[state.slide] || slides[0];
   return `
     <img src="${slide.image}" alt="${slide.place}">
     <button class="hero-arrow prev" type="button" data-slide="-1" aria-label="上一張">‹</button>
     <button class="hero-arrow next" type="button" data-slide="1" aria-label="下一張">›</button>
     <div class="hero-dots">
-      ${heroSlides.map((_, index) => `<button type="button" data-dot="${index}" class="${index === state.slide ? "active" : ""}" aria-label="切換到第 ${index + 1} 張"></button>`).join("")}
+      ${slides.map((_, index) => `<button type="button" data-dot="${index}" class="${index === state.slide ? "active" : ""}" aria-label="切換到第 ${index + 1} 張"></button>`).join("")}
     </div>
   `;
 }
@@ -282,7 +350,7 @@ function newCard(card) {
 
 function searchResults() {
   const keyword = state.search.toLowerCase();
-  const allCards = [...cards, ...latest];
+  const allCards = [...(state.home?.popular || cards), ...(state.home?.latest || latest)];
   const results = allCards.filter(card => {
     const text = [card.id, card.title, card.meta, ...(card.tags || [])].join(" ").toLowerCase();
     return text.includes(keyword);
@@ -549,7 +617,8 @@ function handleClick(event) {
   const slideButton = event.target.closest("[data-slide]");
   if (slideButton) {
     const delta = Number(slideButton.dataset.slide);
-    state.slide = (state.slide + delta + heroSlides.length) % heroSlides.length;
+    const slideCount = (state.home?.banners || heroSlides).length;
+    state.slide = (state.slide + delta + slideCount) % slideCount;
     renderHeroOnly();
     return;
   }
@@ -639,6 +708,7 @@ function render() {
   } else if (route === "login-success") {
     app.innerHTML = renderLoginSuccess();
   } else {
+    loadHomeData();
     app.innerHTML = renderHome();
     if (["explore", "popular", "latest"].includes(route)) {
       requestAnimationFrame(() => document.querySelector(`#${route}`)?.scrollIntoView({ block: "start" }));

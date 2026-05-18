@@ -312,6 +312,16 @@ img {
   background: var(--teal);
 }
 
+.api-note {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  color: var(--teal-dark);
+  border: 1px solid #cfe1e2;
+  border-radius: 10px;
+  background: #eef8f8;
+  font-size: 14px;
+}
+
 .section-block {
   padding: 34px 0 0;
 }
