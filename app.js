@@ -103,7 +103,9 @@ window.addEventListener("popstate", handleRouteChange);
 document.addEventListener("submit", handleSubmit);
 document.addEventListener("click", handleClick);
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape") closeSearchLightbox();
+  if (event.key !== "Escape") return;
+  closeSearchLightbox();
+  closeCatalogModal();
 });
 
 function handleRouteChange() {
@@ -247,7 +249,9 @@ async function openCatalog(next = {}) {
   }
 
   render();
-  requestAnimationFrame(() => document.querySelector("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  if (!(state.catalog.country && state.catalog.city && state.catalog.showPostcards)) {
+    requestAnimationFrame(() => document.querySelector("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
 }
 
 async function fetchJson(path) {
@@ -529,7 +533,9 @@ function cityCatalogPanel() {
   const cityImage = activeCity.imageUrl || state.catalog.items[0]?.image || "assets/hero-sunset.jpg";
 
   return `
-    <section class="catalog-panel catalog-modal" id="catalog" aria-label="${state.catalog.city} 明信片清單">
+    <div class="catalog-lightbox open" id="catalog">
+      <button class="catalog-lightbox-backdrop" type="button" data-action="close-catalog" aria-label="關閉明信片清單"></button>
+      <section class="catalog-panel catalog-modal" role="dialog" aria-modal="true" aria-label="${state.catalog.city} 明信片清單">
       <aside class="catalog-sidebar">
         <div class="catalog-sidebar-heading">
           <strong>探索世界</strong>
@@ -584,7 +590,8 @@ function cityCatalogPanel() {
           </div>
         ` : ""}
       </div>
-    </section>
+      </section>
+    </div>
   `;
 }
 
@@ -973,18 +980,7 @@ function handleClick(event) {
   }
 
   if (action?.dataset.action === "close-catalog") {
-    state.catalog = {
-      ...state.catalog,
-      city: "",
-      keyword: "",
-      showPostcards: false,
-      items: [],
-      total: 0,
-      totalPages: 0,
-      error: ""
-    };
-    render();
-    requestAnimationFrame(() => document.querySelector("#explore")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    closeCatalogModal();
     return;
   }
 
@@ -1031,8 +1027,24 @@ function closeSearchLightbox() {
   document.body.classList.remove("search-modal-open");
 }
 
+function closeCatalogModal() {
+  if (!(state.catalog.country && state.catalog.city && state.catalog.showPostcards)) return;
+  state.catalog = {
+    ...state.catalog,
+    city: "",
+    keyword: "",
+    showPostcards: false,
+    items: [],
+    total: 0,
+    totalPages: 0,
+    error: ""
+  };
+  render();
+}
+
 function render() {
   const route = getRoute();
+  document.body.classList.toggle("catalog-modal-open", false);
   if (route !== "forgot") {
     sessionStorage.removeItem("postoria-reset-sent");
   }
@@ -1048,6 +1060,7 @@ function render() {
   } else {
     loadHomeData();
     app.innerHTML = renderHome();
+    document.body.classList.toggle("catalog-modal-open", Boolean(state.catalog.country && state.catalog.city && state.catalog.showPostcards));
     if (pendingAnchorScroll) {
       const targetId = pendingAnchorScroll;
       pendingAnchorScroll = "";

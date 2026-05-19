@@ -608,16 +608,45 @@ img {
   scroll-margin-top: 120px;
 }
 
+.catalog-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.catalog-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(7, 30, 40, 0.46);
+  backdrop-filter: blur(6px);
+  cursor: zoom-out;
+}
+
 .catalog-modal {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 230px 1fr;
   gap: 24px;
+  width: min(1280px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
   margin-top: 28px;
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: var(--shadow);
+}
+
+.catalog-lightbox .catalog-modal {
+  margin-top: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 30px 90px rgba(15, 48, 60, 0.26);
 }
 
 .catalog-sidebar {
@@ -697,6 +726,16 @@ img {
 .catalog-main {
   min-width: 0;
   overflow: hidden;
+}
+
+.catalog-lightbox .catalog-main {
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.catalog-lightbox .catalog-city-list {
+  max-height: calc(100vh - 190px);
 }
 
 .catalog-modal-header {
@@ -1345,6 +1384,10 @@ img {
   overflow: hidden;
 }
 
+.catalog-modal-open {
+  overflow: hidden;
+}
+
 .search-lightbox {
   position: fixed;
   inset: 0;
@@ -1501,6 +1544,15 @@ img {
     grid-template-columns: 1fr;
   }
 
+  .catalog-lightbox .catalog-modal {
+    width: min(820px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+  }
+
+  .catalog-lightbox .catalog-main {
+    max-height: none;
+  }
+
   .catalog-sidebar {
     border-right: 0;
     border-bottom: 1px solid var(--line);
@@ -1619,6 +1671,17 @@ img {
     margin-right: -2px;
     padding: 16px;
     border-radius: 14px;
+  }
+
+  .catalog-lightbox {
+    padding: 12px;
+  }
+
+  .catalog-lightbox .catalog-modal {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .catalog-modal-header,
