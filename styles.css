@@ -631,6 +631,7 @@ img {
   display: grid;
   place-items: center;
   padding: 24px;
+  overflow: hidden;
 }
 
 .catalog-lightbox-backdrop {
@@ -1700,13 +1701,23 @@ img {
 
   .catalog-lightbox {
     padding: 12px;
+    align-items: start;
+    overflow: hidden;
   }
 
   .catalog-lightbox .catalog-modal {
     width: 100%;
-    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
     margin-left: 0;
     margin-right: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .catalog-lightbox .catalog-main {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 
   .catalog-modal-header,
