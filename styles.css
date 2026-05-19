@@ -1734,11 +1734,22 @@ img {
 
   .catalog-modal .catalog-grid {
     grid-template-columns: 1fr;
+    overflow: hidden;
+  }
+
+  .catalog-lightbox .postcard-card {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .catalog-modal .postcard-card img {
-    height: auto;
-    aspect-ratio: 1.35;
+    width: 100%;
+    max-width: 100%;
+    height: clamp(180px, 54vw, 260px);
+    aspect-ratio: auto;
+    object-fit: cover;
   }
 
   .search-lightbox {
