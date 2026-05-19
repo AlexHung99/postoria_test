@@ -987,6 +987,7 @@ img {
   max-width: 100%;
   height: clamp(160px, 16vw, 230px);
   aspect-ratio: auto;
+  background: #f3f7f7;
   object-fit: cover;
 }
 
@@ -1609,6 +1610,11 @@ img {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .catalog-modal .postcard-card img {
+    height: clamp(170px, 28vw, 240px);
+    object-fit: contain;
+  }
+
   .search-panel,
   .result-list,
   .feature-strip,
@@ -1748,7 +1754,7 @@ img {
     max-width: 100%;
     height: clamp(180px, 54vw, 260px);
     aspect-ratio: auto;
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .search-lightbox {

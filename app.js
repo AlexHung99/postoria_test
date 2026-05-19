@@ -386,7 +386,7 @@ function renderHome() {
 function heroMarkup(slides = (state.home?.banners || heroSlides)) {
   const slide = slides[state.slide] || slides[0];
   return `
-    <img src="${slide.image}" alt="${slide.place}">
+    <img src="${slide.image}" alt="${slide.place}" ${imageFallbackAttr()}>
     <div class="hero-dots">
       ${slides.map((_, index) => `<button type="button" data-dot="${index}" class="${index === state.slide ? "active" : ""}" aria-label="切換到第 ${index + 1} 張"></button>`).join("")}
     </div>
@@ -402,7 +402,7 @@ function countryCard([name, english, count, image]) {
   const active = state.catalog.country === name;
   return `
     <article class="country-card ${active ? "active" : ""}" data-country="${escapeAttr(name)}">
-      <img src="${image}" alt="${name}">
+      <img src="${image}" alt="${name}" ${imageFallbackAttr()}>
       <div><h3>${name}</h3><small>${english}</small><p>${count}</p></div>
     </article>
   `;
@@ -413,7 +413,7 @@ function postcardCard(card, rank) {
   return `
     <article class="postcard-card">
       <span class="rank">${rank}</span>
-      <img src="${card.image}" alt="${card.title}">
+      <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
       <div>
         <h3>${card.title}</h3>
         <p>${card.meta}</p>
@@ -431,7 +431,7 @@ function newCard(card) {
   return `
     <article class="postcard-card new">
       <span class="new-badge">NEW</span>
-      <img src="${card.image}" alt="${card.title}">
+      <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
       <div>
         <h3>${card.title}</h3>
         <p>${card.meta}</p>
@@ -461,7 +461,7 @@ function searchResults() {
       <div class="result-list">
         ${(results.length ? results : allCards.slice(0, 3)).map((card, index) => `
           <article class="result-card">
-            <img src="${card.image}" alt="${card.title}">
+            <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
             <div>
               <h3>${card.title}</h3>
               <p>編號：${card.id}</p>
@@ -531,7 +531,7 @@ function cityCatalogPanel() {
         <div class="catalog-city-list">
           ${state.catalog.cities.map(city => `
             <button type="button" class="${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}" data-show-postcards="true">
-              <img src="${city.imageUrl || "assets/hero-sunset.jpg"}" alt="${city.name}">
+              <img src="${city.imageUrl || "assets/hero-sunset.jpg"}" alt="${city.name}" ${imageFallbackAttr()}>
               <span><strong>${city.name}</strong><small>${city.count.toLocaleString()} 張</small></span>
             </button>
           `).join("")}
@@ -541,7 +541,7 @@ function cityCatalogPanel() {
       <div class="catalog-main">
         <header class="catalog-modal-header">
           <div class="catalog-place">
-            <img src="${cityImage}" alt="${state.catalog.city}">
+            <img src="${cityImage}" alt="${state.catalog.city}" ${imageFallbackAttr()}>
             <div>
               <h2>${state.catalog.city}</h2>
               <p>${state.catalog.country}</p>
@@ -598,7 +598,7 @@ function cityRail() {
       <div class="city-tabs">
         ${state.catalog.cities.map(city => `
           <article class="city-card ${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}" data-show-postcards="true" role="button" tabindex="0">
-            <img src="${city.imageUrl || "assets/hero-sunset.jpg"}" alt="${city.name}">
+            <img src="${city.imageUrl || "assets/hero-sunset.jpg"}" alt="${city.name}" ${imageFallbackAttr()}>
             <div>
               <h3>${city.name}</h3>
               <p>${city.count.toLocaleString()} 張明信片</p>
@@ -616,7 +616,7 @@ function catalogCard(card) {
   const cardNumber = card.legacyNumber || card.id;
   return `
     <article class="postcard-card">
-      <img src="${card.image}" alt="${card.title}">
+      <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
       <div>
         <small class="postcard-number">編號 ${cardNumber}</small>
         <h3>${card.title}</h3>
@@ -633,6 +633,10 @@ function catalogCard(card) {
 
 function escapeAttr(value) {
   return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+function imageFallbackAttr() {
+  return `loading="lazy" onerror="this.onerror=null;this.src='assets/hero-sunset.jpg';"`;
 }
 
 function siteFooter() {
