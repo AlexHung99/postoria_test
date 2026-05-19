@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 128" role="img" aria-labelledby="title desc">
+  <title id="title">Postoria logo</title>
+  <desc id="desc">Postoria logo with circular mark, wordmark, and tagline.</desc>
+  <defs>
+    <linearGradient id="sky" x1="26" y1="18" x2="102" y2="110" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.44" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#dff5f5"/>
+      <stop offset="1" stop-color="#c9ecee"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="24" y1="80" x2="106" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#007681"/>
+      <stop offset="1" stop-color="#004f59"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <circle cx="64" cy="64" r="58" fill="url(#sky)" stroke="#f5b642" stroke-width="4"/>
+    <path d="M23 91c14-18 30-21 49-10 13 8 25 8 36-1v26H23Z" fill="url(#sea)"/>
+    <path d="M28 99c15-10 30-12 47-3 14 7 27 6 42-4" fill="none" stroke="#f5b642" stroke-width="3" stroke-linecap="round"/>
+    <path d="M70 28l6 18 18 6-18 6-6 18-6-18-18-6 18-6Z" fill="#f5b642"/>
+    <circle cx="88" cy="37" r="3" fill="#90d3cf"/>
+    <circle cx="97" cy="53" r="2.5" fill="#90d3cf"/>
+  </g>
+  <text x="148" y="58" fill="#004f59" font-family="Montserrat, Arial, sans-serif" font-size="36" font-weight="800" letter-spacing="8">POSTORIA</text>
+  <text x="150" y="86" fill="#516875" font-family="Arial, sans-serif" font-size="11" font-weight="700" letter-spacing="2">COLLECT MOMENTS, SHARE THE WORLD.</text>
+</svg>
