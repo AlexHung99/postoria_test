@@ -1335,6 +1335,95 @@ img {
   transform: translate(-50%, 0);
 }
 
+.search-modal-open {
+  overflow: hidden;
+}
+
+.search-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.search-lightbox.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.search-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(7, 30, 40, 0.48);
+  backdrop-filter: blur(6px);
+  cursor: zoom-out;
+}
+
+.search-lightbox-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(620px, 100%);
+  padding: 32px;
+  border: 1px solid rgba(223, 231, 233, 0.92);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 30px 80px rgba(15, 48, 60, 0.24);
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.18s ease;
+}
+
+.search-lightbox.open .search-lightbox-dialog {
+  transform: translateY(0) scale(1);
+}
+
+.search-lightbox-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.search-lightbox-dialog strong {
+  display: block;
+  color: var(--teal-dark);
+  font-size: 28px;
+}
+
+.search-lightbox-dialog p {
+  margin: 8px 0 22px;
+  color: var(--muted);
+}
+
+.search-lightbox-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+}
+
+.search-lightbox-form input {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  outline: 0;
+  padding: 0 20px;
+  color: var(--ink);
+  background: #f6f8f8;
+}
+
 @media (max-width: 1050px) {
   .site-header {
     grid-template-columns: auto 1fr auto auto;
@@ -1390,24 +1479,6 @@ img {
     height: 48px;
     margin: 0;
     background: #f6f8f8;
-  }
-
-  .header-search.search-open {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    justify-self: stretch;
-    width: 100%;
-    height: auto;
-    border-color: var(--line);
-    background: #f6f8f8;
-  }
-
-  .header-search.search-open input {
-    display: block;
-  }
-
-  .header-search.search-open button {
-    margin-right: 5px;
   }
 
   .menu-toggle {
@@ -1574,6 +1645,27 @@ img {
   .catalog-modal .postcard-card img {
     height: auto;
     aspect-ratio: 1.35;
+  }
+
+  .search-lightbox {
+    padding: 16px;
+  }
+
+  .search-lightbox-dialog {
+    padding: 26px 18px 20px;
+    border-radius: 14px;
+  }
+
+  .search-lightbox-dialog strong {
+    font-size: 24px;
+  }
+
+  .search-lightbox-form {
+    grid-template-columns: 1fr;
+  }
+
+  .search-lightbox-form input {
+    min-height: 48px;
   }
 
   .search-panel {

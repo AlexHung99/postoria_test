@@ -6,6 +6,7 @@ const API_BASE = localStorage.getItem("postoria-api-base") || defaultApiBase;
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
 const mobileMenu = document.querySelector("[data-mobile-menu]");
+const searchLightbox = document.querySelector("[data-search-lightbox]");
 const homeAnchors = new Set(["explore", "popular", "latest"]);
 let pendingAnchorScroll = homeAnchors.has(getRoute()) ? getRoute() : "";
 
@@ -101,6 +102,9 @@ window.addEventListener("hashchange", handleRouteChange);
 window.addEventListener("popstate", handleRouteChange);
 document.addEventListener("submit", handleSubmit);
 document.addEventListener("click", handleClick);
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeSearchLightbox();
+});
 
 function handleRouteChange() {
   const route = getRoute();
@@ -809,6 +813,7 @@ async function handleSubmit(event) {
     } else {
       openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, showPostcards: true });
     }
+    closeSearchLightbox();
     showToast(`已搜尋「${keyword}」`);
     return;
   }
@@ -864,12 +869,16 @@ function handleClick(event) {
   if (headerSearchButton) {
     const form = headerSearchButton.closest(".header-search");
     const compactHeader = window.matchMedia("(max-width: 1050px)").matches;
-    if (compactHeader && !form.classList.contains("search-open")) {
+    if (compactHeader) {
       event.preventDefault();
-      form.classList.add("search-open");
-      form.querySelector("input")?.focus();
+      openSearchLightbox(form.querySelector("input")?.value || "");
       return;
     }
+  }
+
+  if (event.target.closest("[data-search-close]")) {
+    closeSearchLightbox();
+    return;
   }
 
   const menuToggle = event.target.closest("[data-menu-toggle]");
@@ -1000,6 +1009,25 @@ function handleClick(event) {
     showToast(`${action.dataset.label}需登入會員後使用`);
     location.hash = "login";
   }
+}
+
+function openSearchLightbox(value = "") {
+  if (!searchLightbox) return;
+  const input = searchLightbox.querySelector("input");
+  searchLightbox.classList.add("open");
+  searchLightbox.setAttribute("aria-hidden", "false");
+  document.body.classList.add("search-modal-open");
+  if (input) {
+    input.value = value;
+    requestAnimationFrame(() => input.focus());
+  }
+}
+
+function closeSearchLightbox() {
+  if (!searchLightbox) return;
+  searchLightbox.classList.remove("open");
+  searchLightbox.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("search-modal-open");
 }
 
 function render() {
