@@ -248,6 +248,12 @@ img {
   padding: 0 0 26px;
 }
 
+.home-shell.search-mode #popular,
+.home-shell.search-mode #latest,
+.home-shell.search-mode .feature-strip {
+  display: none;
+}
+
 .hero {
   position: relative;
   overflow: hidden;

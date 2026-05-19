@@ -301,10 +301,11 @@ function renderHome() {
     latest
   };
   const activeBanners = home.banners.length ? home.banners : heroSlides;
+  const searchMode = Boolean(state.search || state.catalog.keyword);
   state.slide = state.slide % activeBanners.length;
 
   return `
-    <section class="home-shell">
+    <section class="home-shell ${searchMode ? "search-mode" : ""}">
       <div class="hero" id="hero">
         ${heroMarkup(activeBanners)}
       </div>
