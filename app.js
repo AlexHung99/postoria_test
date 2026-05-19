@@ -378,17 +378,6 @@ function renderHome() {
 
       ${state.search ? searchResults() : ""}
 
-      <section class="feature-strip">
-        <article data-action="need-login" data-label="上傳明信片"><span>⇧</span><h3>上傳明信片</h3><p>登入會員後即可上傳你的明信片，讓更多人看見你的世界。</p></article>
-        <article data-action="show-favorites"><span>♡</span><h3>收藏明信片</h3><p>收藏喜歡的明信片，建立屬於你的回憶收藏冊。</p></article>
-        <article data-action="need-login" data-label="明信片評論"><span>▣</span><h3>明信片評論</h3><p>分享你的旅行故事與感受，與世界交流。</p></article>
-        <aside>
-          <h3>加入我們</h3>
-          <p>登入或註冊會員，開始收藏與分享。</p>
-          <a class="light-button" href="#register">立即登入 / 註冊 →</a>
-        </aside>
-      </section>
-
       ${siteFooter()}
     </section>
   `;
