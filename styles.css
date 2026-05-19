@@ -963,6 +963,15 @@ img {
   margin: 10px 0;
 }
 
+.postcard-number {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: var(--teal-dark);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
 .postcard-tags span {
   padding: 5px 9px;
   border-radius: 8px;

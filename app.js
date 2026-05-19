@@ -614,10 +614,12 @@ function cityRail() {
 function catalogCard(card) {
   const active = state.favorites.includes(card.id);
   const tags = (card.tags || []).slice(0, 3);
+  const cardNumber = card.legacyNumber || card.id;
   return `
     <article class="postcard-card">
       <img src="${card.image}" alt="${card.title}">
       <div>
+        <small class="postcard-number">編號 ${cardNumber}</small>
         <h3>${card.title}</h3>
         ${tags.length ? `<div class="postcard-tags">${tags.map(tag => `<span>#${tag}</span>`).join("")}</div>` : ""}
         <p>${card.meta}</p>
