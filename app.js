@@ -185,12 +185,14 @@ function mapApiPostcard(item) {
 }
 
 async function openCatalog(next = {}) {
+  const showPostcards = next.showPostcards ?? state.catalog.showPostcards ?? false;
   state.catalog = {
     ...state.catalog,
     ...next,
     active: true,
     loading: true,
     error: "",
+    showPostcards,
     page: next.page || 1
   };
   render();
@@ -208,7 +210,11 @@ async function openCatalog(next = {}) {
       state.catalog.country
         ? fetchJson(`/api/postoria/cities?country=${encodeURIComponent(state.catalog.country)}`)
         : Promise.resolve([]),
-      fetchJson(`/api/postoria/postcards?${query}`)
+      showPostcards ? fetchJson(`/api/postoria/postcards?${query}`) : Promise.resolve({
+        items: [],
+        total: 0,
+        totalPages: 0
+      })
     ]);
 
     state.catalog = {
@@ -464,6 +470,7 @@ function searchResults() {
 
 function catalogPanel() {
   if (!state.catalog.active) return "";
+  if (state.catalog.country && !state.catalog.showPostcards) return "";
   const title = state.catalog.keyword
     ? `搜尋：${state.catalog.keyword}`
     : state.catalog.city
@@ -511,11 +518,15 @@ function cityRail() {
         <span>選擇地區瀏覽明信片</span>
       </div>
       <div class="city-tabs">
-        <button type="button" class="${!state.catalog.city ? "active" : ""}" data-city="">全部地區</button>
+        <button type="button" class="${!state.catalog.city && state.catalog.showPostcards ? "active" : ""}" data-city="" data-show-postcards="true">全部地區</button>
         ${state.catalog.cities.map(city => `
-          <button type="button" class="${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}">
-            ${city.name}<span>${city.count}</span>
-          </button>
+          <article class="city-card ${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}" data-show-postcards="true" role="button" tabindex="0">
+            <img src="${city.imageUrl || "assets/hero-sunset.jpg"}" alt="${city.name}">
+            <div>
+              <h3>${city.name}</h3>
+              <p>${city.count.toLocaleString()} 張明信片</p>
+            </div>
+          </article>
         `).join("")}
       </div>
     </div>
@@ -711,7 +722,7 @@ async function handleSubmit(event) {
       return;
     }
     state.search = keyword.replace(/^#/, "");
-    openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1 });
+    openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, showPostcards: true });
     showToast(`已搜尋「${keyword}」`);
     return;
   }
@@ -800,19 +811,24 @@ function handleClick(event) {
   const keyword = event.target.closest("[data-keyword]");
   if (keyword) {
     state.search = keyword.dataset.keyword;
-    openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1 });
+    openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, showPostcards: true });
     return;
   }
 
   const country = event.target.closest("[data-country]");
   if (country) {
-    openCatalog({ country: country.dataset.country, city: "", keyword: "", sort: "latest", page: 1 });
+    openCatalog({ country: country.dataset.country, city: "", keyword: "", sort: "latest", page: 1, showPostcards: false });
     return;
   }
 
   const city = event.target.closest("[data-city]");
   if (city) {
-    openCatalog({ city: city.dataset.city, keyword: "", page: 1 });
+    openCatalog({
+      city: city.dataset.city,
+      keyword: "",
+      page: 1,
+      showPostcards: city.dataset.showPostcards === "true"
+    });
     return;
   }
 
@@ -853,7 +869,8 @@ function handleClick(event) {
       city: "",
       keyword: "",
       sort: action.dataset.viewSort || "latest",
-      page: 1
+      page: 1,
+      showPostcards: true
     });
     return;
   }

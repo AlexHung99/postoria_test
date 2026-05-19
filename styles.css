@@ -607,9 +607,11 @@ img {
 
 .city-tabs {
   display: flex;
-  gap: 10px;
+  gap: 14px;
   overflow-x: auto;
-  padding: 0 0 14px;
+  padding: 2px 4px 14px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
 }
 
 .city-rail {
@@ -676,6 +678,62 @@ img {
 .city-tabs button.active span {
   color: var(--teal-dark);
   background: #fff;
+}
+
+.city-card {
+  flex: 0 0 190px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.city-card:hover,
+.city-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(15, 48, 60, 0.12);
+}
+
+.city-card:focus-visible {
+  outline: 3px solid rgba(0, 106, 112, 0.2);
+  outline-offset: 2px;
+}
+
+.city-card.active {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0, 106, 112, 0.14);
+}
+
+.city-card img {
+  width: 100%;
+  aspect-ratio: 1.42;
+  object-fit: cover;
+}
+
+.city-card div {
+  padding: 12px 14px 14px;
+}
+
+.city-card h3,
+.city-card p {
+  margin: 0;
+}
+
+.city-card h3 {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.city-card p {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .catalog-grid {
