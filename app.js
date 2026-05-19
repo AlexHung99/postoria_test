@@ -652,7 +652,7 @@ function siteFooter() {
   return `
     <footer class="site-footer">
       <div class="footer-brand">
-        <img class="brand-logo footer-logo" src="assets/logo-header.jpg" alt="Postoria">
+        <img class="brand-logo footer-logo" src="assets/logo-header.png" alt="Postoria">
       </div>
       <nav>
         <a href="#explore">探索世界</a>
@@ -667,7 +667,7 @@ function siteFooter() {
 
 function logo() {
   return `
-    <img class="auth-logo" src="assets/logo-mark.jpg" alt="Postoria">
+    <img class="auth-logo" src="assets/logo-mark.png" alt="Postoria">
   `;
 }
 
