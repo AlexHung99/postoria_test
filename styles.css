@@ -366,6 +366,13 @@ img {
   white-space: nowrap;
 }
 
+.link-button.active {
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--teal);
+}
+
 .country-grid,
 .postcard-row {
   display: grid;
@@ -396,6 +403,13 @@ img {
 
 .country-card {
   overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.country-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(15, 48, 60, 0.12);
 }
 
 .country-card img {
@@ -589,6 +603,89 @@ img {
   margin-top: 6px;
   color: var(--muted);
   line-height: 1.5;
+}
+
+.catalog-panel {
+  scroll-margin-top: 120px;
+}
+
+.catalog-tools {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.city-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0 0 14px;
+}
+
+.city-tabs button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--teal-dark);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.city-tabs button.active {
+  color: #fff;
+  border-color: var(--teal);
+  background: var(--teal);
+}
+
+.city-tabs span {
+  display: inline-grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--teal-dark);
+  background: #e7f2f2;
+  font-size: 12px;
+}
+
+.city-tabs button.active span {
+  color: var(--teal-dark);
+  background: #fff;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--teal-dark);
+  background: #fff;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .feature-strip {
@@ -942,7 +1039,8 @@ img {
   }
 
   .postcard-row,
-  .postcard-row.compact {
+  .postcard-row.compact,
+  .catalog-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1033,6 +1131,10 @@ img {
 
   .postcard-row .postcard-card {
     flex-basis: 220px;
+  }
+
+  .catalog-grid {
+    grid-template-columns: 1fr;
   }
 
   .search-panel {

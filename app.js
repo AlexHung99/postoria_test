@@ -15,7 +15,22 @@ const state = {
   favorites: readJson("postoria-favorites") || [],
   home: null,
   homeLoading: false,
-  homeError: ""
+  homeError: "",
+  catalog: {
+    active: false,
+    country: "",
+    city: "",
+    keyword: "",
+    sort: "latest",
+    page: 1,
+    pageSize: 12,
+    cities: [],
+    items: [],
+    total: 0,
+    totalPages: 0,
+    loading: false,
+    error: ""
+  }
 };
 
 const heroSlides = [
@@ -153,12 +168,67 @@ function mapApiPostcard(item) {
     id: item.legacyId || item.id,
     title: item.title,
     meta: [item.country, item.city].filter(Boolean).join("・"),
+    country: item.country || "",
+    city: item.city || "",
     image: item.imageUrl || "assets/hero-sunset.jpg",
     likes: Number(item.likeCount || 0).toLocaleString(),
     views: Number(item.viewCount || 0).toLocaleString(),
     tags: item.tags || [],
     legacyNumber: item.legacyNumber
   };
+}
+
+async function openCatalog(next = {}) {
+  state.catalog = {
+    ...state.catalog,
+    ...next,
+    active: true,
+    loading: true,
+    error: "",
+    page: next.page || 1
+  };
+  render();
+
+  try {
+    const query = new URLSearchParams();
+    if (state.catalog.country) query.set("country", state.catalog.country);
+    if (state.catalog.city) query.set("city", state.catalog.city);
+    if (state.catalog.keyword) query.set("keyword", state.catalog.keyword);
+    if (state.catalog.sort) query.set("sort", state.catalog.sort);
+    query.set("page", state.catalog.page);
+    query.set("pageSize", state.catalog.pageSize);
+
+    const [cities, postcards] = await Promise.all([
+      state.catalog.country
+        ? fetchJson(`/api/postoria/cities?country=${encodeURIComponent(state.catalog.country)}`)
+        : Promise.resolve([]),
+      fetchJson(`/api/postoria/postcards?${query}`)
+    ]);
+
+    state.catalog = {
+      ...state.catalog,
+      cities,
+      items: (postcards.items || []).map(mapApiPostcard),
+      total: postcards.total || 0,
+      totalPages: postcards.totalPages || 0,
+      loading: false
+    };
+  } catch {
+    state.catalog = {
+      ...state.catalog,
+      loading: false,
+      error: "資料讀取失敗，請稍後再試。"
+    };
+  }
+
+  render();
+  requestAnimationFrame(() => document.querySelector("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+}
+
+async function fetchJson(path) {
+  const response = await fetch(`${API_BASE}${path}`);
+  if (!response.ok) throw new Error(`API ${response.status}`);
+  return response.json();
 }
 
 function showToast(message) {
@@ -217,12 +287,14 @@ function renderHome() {
             <h2><span>◎</span>探索世界</h2>
             <p>依照國家與城市分類</p>
           </div>
-          <button class="link-button" type="button" data-action="view-all" data-label="探索世界">查看全部 ›</button>
+          <button class="link-button" type="button" data-action="view-all" data-view-sort="latest" data-label="探索世界">查看全部 ›</button>
         </div>
         <div class="country-grid">
           ${home.countries.map(countryCard).join("")}
         </div>
       </section>
+
+      ${catalogPanel()}
 
       <section class="section-block" id="popular">
         <div class="section-heading">
@@ -230,7 +302,7 @@ function renderHome() {
             <h2><span>♨</span>熱門收藏</h2>
             <p>依收藏數排序</p>
           </div>
-          <button class="link-button" type="button" data-action="view-all" data-label="熱門收藏">查看全部 ›</button>
+          <button class="link-button" type="button" data-action="view-all" data-view-sort="popular" data-label="熱門收藏">查看全部 ›</button>
         </div>
         <div class="postcard-row">
           ${home.popular.map((card, index) => postcardCard(card, index + 1)).join("")}
@@ -243,7 +315,7 @@ function renderHome() {
             <h2><span>✦</span>最新上架</h2>
             <p>最新加入的明信片</p>
           </div>
-          <button class="link-button" type="button" data-action="view-all" data-label="最新上架">查看全部 ›</button>
+          <button class="link-button" type="button" data-action="view-all" data-view-sort="latest" data-label="最新上架">查看全部 ›</button>
         </div>
         <div class="postcard-row compact">
           ${home.latest.map(newCard).join("")}
@@ -308,7 +380,7 @@ function renderHeroOnly() {
 
 function countryCard([name, english, count, image]) {
   return `
-    <article class="country-card">
+    <article class="country-card" data-country="${escapeAttr(name)}">
       <img src="${image}" alt="${name}">
       <div><h3>${name}</h3><small>${english}</small><p>${count}</p></div>
     </article>
@@ -382,6 +454,72 @@ function searchResults() {
       </div>
     </section>
   `;
+}
+
+function catalogPanel() {
+  if (!state.catalog.active) return "";
+  const title = state.catalog.keyword
+    ? `搜尋：${state.catalog.keyword}`
+    : state.catalog.city
+      ? `${state.catalog.country}・${state.catalog.city}`
+      : state.catalog.country || "全部明信片";
+
+  return `
+    <section class="section-block catalog-panel" id="catalog">
+      <div class="section-heading">
+        <div>
+          <h2><span>▦</span>${title}</h2>
+          <p>${state.catalog.loading ? "讀取中..." : `共 ${state.catalog.total.toLocaleString()} 張明信片`}</p>
+        </div>
+        <div class="catalog-tools">
+          <button class="link-button ${state.catalog.sort === "latest" ? "active" : ""}" type="button" data-sort="latest">最新</button>
+          <button class="link-button ${state.catalog.sort === "popular" ? "active" : ""}" type="button" data-sort="popular">熱門</button>
+        </div>
+      </div>
+      ${state.catalog.cities.length ? `
+        <div class="city-tabs">
+          <button type="button" class="${!state.catalog.city ? "active" : ""}" data-city="">全部地區</button>
+          ${state.catalog.cities.map(city => `
+            <button type="button" class="${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}">
+              ${city.name}<span>${city.count}</span>
+            </button>
+          `).join("")}
+        </div>
+      ` : ""}
+      ${state.catalog.error ? `<p class="api-note">${state.catalog.error}</p>` : ""}
+      <div class="catalog-grid">
+        ${state.catalog.items.map(catalogCard).join("")}
+      </div>
+      ${state.catalog.totalPages > 1 ? `
+        <div class="pagination">
+          <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>‹</button>
+          <span>${state.catalog.page} / ${state.catalog.totalPages}</span>
+          <button type="button" data-page="${Math.min(state.catalog.totalPages, state.catalog.page + 1)}" ${state.catalog.page >= state.catalog.totalPages ? "disabled" : ""}>›</button>
+        </div>
+      ` : ""}
+    </section>
+  `;
+}
+
+function catalogCard(card) {
+  const active = state.favorites.includes(card.id);
+  return `
+    <article class="postcard-card">
+      <img src="${card.image}" alt="${card.title}">
+      <div>
+        <h3>${card.title}</h3>
+        <p>${card.meta}</p>
+        <footer>
+          <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${card.id}">${active ? "♥" : "♡"} ${card.likes}</button>
+          <span>◎ ${card.views}</span>
+        </footer>
+      </div>
+    </article>
+  `;
+}
+
+function escapeAttr(value) {
+  return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
 function siteFooter() {
@@ -552,9 +690,7 @@ async function handleSubmit(event) {
       return;
     }
     state.search = keyword.replace(/^#/, "");
-    if ((location.hash || "#home") !== "#home") location.hash = "home";
-    render();
-    requestAnimationFrame(() => document.querySelector("#search")?.scrollIntoView({ behavior: "smooth" }));
+    openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1 });
     showToast(`已搜尋「${keyword}」`);
     return;
   }
@@ -652,8 +788,31 @@ function handleClick(event) {
   const keyword = event.target.closest("[data-keyword]");
   if (keyword) {
     state.search = keyword.dataset.keyword;
-    render();
-    requestAnimationFrame(() => document.querySelector("#search")?.scrollIntoView({ behavior: "smooth" }));
+    openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1 });
+    return;
+  }
+
+  const country = event.target.closest("[data-country]");
+  if (country) {
+    openCatalog({ country: country.dataset.country, city: "", keyword: "", sort: "latest", page: 1 });
+    return;
+  }
+
+  const city = event.target.closest("[data-city]");
+  if (city) {
+    openCatalog({ city: city.dataset.city, keyword: "", page: 1 });
+    return;
+  }
+
+  const sort = event.target.closest("[data-sort]");
+  if (sort) {
+    openCatalog({ sort: sort.dataset.sort, page: 1 });
+    return;
+  }
+
+  const page = event.target.closest("[data-page]");
+  if (page) {
+    openCatalog({ page: Number(page.dataset.page) });
     return;
   }
 
@@ -677,7 +836,13 @@ function handleClick(event) {
   }
 
   if (action?.dataset.action === "view-all") {
-    showToast(`${action.dataset.label}列表 API 尚未串接，先保留首頁預覽資料。`);
+    openCatalog({
+      country: "",
+      city: "",
+      keyword: "",
+      sort: action.dataset.viewSort || "latest",
+      page: 1
+    });
     return;
   }
 
