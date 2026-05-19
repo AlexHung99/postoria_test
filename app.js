@@ -6,6 +6,8 @@ const API_BASE = localStorage.getItem("postoria-api-base") || defaultApiBase;
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
 const mobileMenu = document.querySelector("[data-mobile-menu]");
+const homeAnchors = new Set(["explore", "popular", "latest"]);
+let pendingAnchorScroll = homeAnchors.has(getRoute()) ? getRoute() : "";
 
 const state = {
   member: readJson("postoria-member"),
@@ -95,9 +97,16 @@ const latest = [
   { id: "IS-0012", title: "Iceland Aurora", meta: "冰島", image: "assets/norway.jpg", likes: "64", tags: ["冰島", "極光"] }
 ];
 
-window.addEventListener("hashchange", render);
+window.addEventListener("hashchange", handleRouteChange);
+window.addEventListener("popstate", handleRouteChange);
 document.addEventListener("submit", handleSubmit);
 document.addEventListener("click", handleClick);
+
+function handleRouteChange() {
+  const route = getRoute();
+  pendingAnchorScroll = homeAnchors.has(route) ? route : "";
+  render();
+}
 
 setInterval(() => {
   if ((location.hash || "#home") !== "#home") return;
@@ -247,6 +256,10 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
   window.setTimeout(() => toast.classList.remove("show"), 2600);
+}
+
+function getRoute() {
+  return location.hash.replace(/^#+/, "") || "home";
 }
 
 function setStatus(form, message, isError = false) {
@@ -801,10 +814,11 @@ function handleClick(event) {
     const target = document.querySelector(`#${scrollLink.dataset.scroll}`);
     if (target) {
       event.preventDefault();
-      location.hash = scrollLink.dataset.scroll;
+      history.pushState(null, "", `#${scrollLink.dataset.scroll}`);
       target.scrollIntoView({ behavior: "smooth", block: "start" });
       mobileMenu.classList.remove("open");
       mobileMenu.setAttribute("aria-hidden", "true");
+      return;
     }
   }
 
@@ -888,7 +902,7 @@ function handleClick(event) {
 }
 
 function render() {
-  const route = location.hash.replace("#", "") || "home";
+  const route = getRoute();
   if (route !== "forgot") {
     sessionStorage.removeItem("postoria-reset-sent");
   }
@@ -904,10 +918,10 @@ function render() {
   } else {
     loadHomeData();
     app.innerHTML = renderHome();
-    if (["explore", "popular", "latest"].includes(route)) {
-      requestAnimationFrame(() => document.querySelector(`#${route}`)?.scrollIntoView({ block: "start" }));
-    } else {
-      window.scrollTo({ top: 0, behavior: "instant" });
+    if (pendingAnchorScroll) {
+      const targetId = pendingAnchorScroll;
+      pendingAnchorScroll = "";
+      requestAnimationFrame(() => document.querySelector(`#${targetId}`)?.scrollIntoView({ block: "start" }));
     }
   }
 }
