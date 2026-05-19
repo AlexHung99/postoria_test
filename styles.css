@@ -621,6 +621,7 @@ img {
   gap: 24px;
   width: min(1280px, calc(100vw - 48px));
   max-height: calc(100vh - 48px);
+  min-width: 0;
   margin-top: 28px;
   padding: 24px;
   border: 1px solid var(--line);
@@ -637,6 +638,7 @@ img {
 }
 
 .catalog-sidebar {
+  min-width: 0;
   padding: 8px 0 0;
   border-right: 1px solid var(--line);
 }
@@ -730,6 +732,7 @@ img {
   justify-content: space-between;
   gap: 18px;
   align-items: center;
+  min-width: 0;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--line);
 }
@@ -754,6 +757,7 @@ img {
 }
 
 .catalog-place h2 {
+  overflow-wrap: anywhere;
   font-size: 30px;
 }
 
@@ -767,6 +771,7 @@ img {
   align-items: center;
   gap: 18px;
   color: var(--muted);
+  min-width: 0;
   white-space: nowrap;
 }
 
@@ -787,6 +792,7 @@ img {
   grid-template-columns: minmax(240px, 480px) auto;
   gap: 16px;
   align-items: center;
+  min-width: 0;
   margin: 20px 0 24px;
 }
 
@@ -822,6 +828,8 @@ img {
   display: inline-flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .city-tabs {
@@ -1539,11 +1547,39 @@ img {
 
   .catalog-lightbox .catalog-modal {
     width: min(820px, calc(100vw - 32px));
-    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .catalog-lightbox .catalog-main {
     max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .catalog-modal-header {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .catalog-summary {
+    justify-content: space-between;
+    white-space: normal;
+  }
+
+  .catalog-modal-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-search {
+    width: 100%;
+  }
+
+  .catalog-tools {
+    justify-content: flex-start;
   }
 
   .catalog-sidebar {
@@ -1684,15 +1720,6 @@ img {
   .catalog-modal-header,
   .catalog-modal-tools {
     grid-template-columns: 1fr;
-  }
-
-  .catalog-modal-header {
-    display: grid;
-    align-items: start;
-  }
-
-  .catalog-summary {
-    justify-content: space-between;
   }
 
   .catalog-place img {
