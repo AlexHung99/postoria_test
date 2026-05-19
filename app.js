@@ -365,8 +365,6 @@ function heroMarkup(slides = (state.home?.banners || heroSlides)) {
   const slide = slides[state.slide] || slides[0];
   return `
     <img src="${slide.image}" alt="${slide.place}">
-    <button class="hero-arrow prev" type="button" data-slide="-1" aria-label="上一張">‹</button>
-    <button class="hero-arrow next" type="button" data-slide="1" aria-label="下一張">›</button>
     <div class="hero-dots">
       ${slides.map((_, index) => `<button type="button" data-dot="${index}" class="${index === state.slide ? "active" : ""}" aria-label="切換到第 ${index + 1} 張"></button>`).join("")}
     </div>
@@ -747,15 +745,6 @@ function handleClick(event) {
     const open = !mobileMenu.classList.contains("open");
     mobileMenu.classList.toggle("open", open);
     mobileMenu.setAttribute("aria-hidden", String(!open));
-    return;
-  }
-
-  const slideButton = event.target.closest("[data-slide]");
-  if (slideButton) {
-    const delta = Number(slideButton.dataset.slide);
-    const slideCount = (state.home?.banners || heroSlides).length;
-    state.slide = (state.slide + delta + slideCount) % slideCount;
-    renderHeroOnly();
     return;
   }
 
