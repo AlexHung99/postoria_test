@@ -858,6 +858,18 @@ async function handleSubmit(event) {
 }
 
 function handleClick(event) {
+  const headerSearchButton = event.target.closest(".header-search button");
+  if (headerSearchButton) {
+    const form = headerSearchButton.closest(".header-search");
+    const compactHeader = window.matchMedia("(max-width: 1050px)").matches;
+    if (compactHeader && !form.classList.contains("search-open")) {
+      event.preventDefault();
+      form.classList.add("search-open");
+      form.querySelector("input")?.focus();
+      return;
+    }
+  }
+
   const menuToggle = event.target.closest("[data-menu-toggle]");
   if (menuToggle) {
     const open = !mobileMenu.classList.contains("open");

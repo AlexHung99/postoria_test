@@ -1328,14 +1328,77 @@ img {
 
 @media (max-width: 1050px) {
   .site-header {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 16px;
   }
 
-  .desktop-nav,
-  .header-search,
   .ghost-button,
   .header-actions .solid-button {
     display: none;
+  }
+
+  .desktop-nav {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .desktop-nav a {
+    width: 44px;
+    height: 44px;
+    justify-content: center;
+    gap: 0;
+    border-radius: 50%;
+    font-size: 0;
+  }
+
+  .desktop-nav span {
+    font-size: 25px;
+  }
+
+  .desktop-nav a:hover,
+  .desktop-nav a:focus-visible {
+    background: #eef7f7;
+  }
+
+  .header-search {
+    display: flex;
+    justify-self: end;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    border-color: transparent;
+    background: transparent;
+    transition: width 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .header-search input {
+    display: none;
+  }
+
+  .header-search button {
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    background: #f6f8f8;
+  }
+
+  .header-search.search-open {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
+    width: 100%;
+    height: auto;
+    border-color: var(--line);
+    background: #f6f8f8;
+  }
+
+  .header-search.search-open input {
+    display: block;
+  }
+
+  .header-search.search-open button {
+    margin-right: 5px;
   }
 
   .menu-toggle {
@@ -1400,7 +1463,12 @@ img {
   }
 
   .site-header {
+    grid-template-columns: auto 1fr auto;
     padding: 18px 20px;
+  }
+
+  .desktop-nav {
+    display: none;
   }
 
   .brand-copy small {
