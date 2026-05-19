@@ -318,10 +318,9 @@ function renderHome() {
       <section class="section-block" id="explore">
         <div class="section-heading">
           <div>
-            <h2><span>◎</span>探索世界</h2>
+            <h2><svg class="icon"><use href="#icon-globe"></use></svg>探索世界</h2>
             <p>依照國家與城市分類</p>
           </div>
-          <button class="link-button" type="button" data-action="view-all" data-view-sort="latest" data-label="探索世界">查看全部 ›</button>
         </div>
         <div class="country-grid">
           ${home.countries.map(countryCard).join("")}
