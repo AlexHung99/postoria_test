@@ -652,8 +652,7 @@ function siteFooter() {
   return `
     <footer class="site-footer">
       <div class="footer-brand">
-        <span class="brand-mark" aria-hidden="true"><span class="brand-star">✦</span><span class="brand-wave"></span></span>
-        <div><strong>POSTORIA</strong><small>COLLECT MOMENTS, SHARE THE WORLD.</small></div>
+        <img class="brand-logo footer-logo" src="assets/logo-header.jpg" alt="Postoria">
       </div>
       <nav>
         <a href="#explore">探索世界</a>
@@ -668,11 +667,7 @@ function siteFooter() {
 
 function logo() {
   return `
-    <span class="brand-mark auth-logo" aria-hidden="true">
-      <span class="brand-star">✦</span>
-      <span class="brand-wave"></span>
-    </span>
-    <p class="wordmark">POSTORIA</p>
+    <img class="auth-logo" src="assets/logo-mark.jpg" alt="Postoria">
   `;
 }
 

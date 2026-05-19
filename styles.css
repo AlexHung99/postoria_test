@@ -84,70 +84,14 @@ img {
 .footer-brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
   min-width: 0;
 }
 
-.brand-mark {
-  position: relative;
-  display: inline-grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  overflow: hidden;
-  border: 2px solid var(--gold);
-  border-radius: 50%;
-  background: linear-gradient(160deg, #fff 0 38%, #dff5f5 39% 100%);
-}
-
-.brand-star {
-  position: relative;
-  z-index: 2;
-  color: var(--gold);
-  font-size: 25px;
-}
-
-.brand-wave {
-  position: absolute;
-  bottom: 9px;
-  left: 8px;
-  width: 42px;
-  height: 15px;
-  border-radius: 50% 50% 0 0;
-  background: linear-gradient(135deg, #007681, #004f59);
-}
-
-.brand-wave::after {
-  content: "";
-  position: absolute;
-  left: 9px;
-  bottom: 5px;
-  width: 34px;
-  height: 10px;
-  border-radius: 50%;
-  border-top: 2px solid rgba(245, 182, 66, 0.9);
-}
-
-.brand-copy strong,
-.footer-brand strong,
-.wordmark {
+.brand-logo {
   display: block;
-  margin: 0;
-  color: var(--teal-dark);
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 4px;
-}
-
-.brand-copy small,
-.footer-brand small {
-  display: block;
-  margin-top: 2px;
-  color: #516875;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1px;
+  width: clamp(180px, 18vw, 258px);
+  height: auto;
+  object-fit: contain;
 }
 
 .desktop-nav {
@@ -1123,13 +1067,9 @@ img {
   background: linear-gradient(135deg, #006a70, #004f59);
 }
 
-.site-footer .brand-mark {
-  background: #fff;
-}
-
-.site-footer strong,
-.site-footer small {
-  color: #fff;
+.site-footer .footer-logo {
+  width: 230px;
+  max-width: 100%;
 }
 
 .site-footer nav {
@@ -1238,11 +1178,12 @@ img {
 }
 
 .auth-logo {
+  display: block;
+  width: 84px;
+  height: 84px;
   margin: 0 auto 10px;
-}
-
-.wordmark {
-  text-align: center;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .auth-card h2 {
@@ -1635,18 +1576,12 @@ img {
     display: none;
   }
 
-  .brand-copy small {
-    display: none;
+  .brand-logo {
+    width: 164px;
   }
 
-  .brand-copy strong {
-    font-size: 20px;
-    letter-spacing: 3px;
-  }
-
-  .brand-mark {
-    width: 48px;
-    height: 48px;
+  .mobile-logo {
+    width: 180px;
   }
 
   .home-shell,
