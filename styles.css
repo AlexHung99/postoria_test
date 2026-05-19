@@ -45,6 +45,27 @@ img {
   max-width: 100%;
 }
 
+.icon-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  color: currentColor;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -143,9 +164,8 @@ img {
   font-weight: 800;
 }
 
-.desktop-nav span {
+.desktop-nav .icon {
   color: var(--teal);
-  font-size: 24px;
 }
 
 .header-search,
@@ -170,6 +190,8 @@ img {
 }
 
 .header-search button {
+  display: grid;
+  place-items: center;
   width: 44px;
   height: 44px;
   margin-right: 5px;
@@ -224,18 +246,12 @@ img {
 
 .menu-toggle {
   display: none;
+  place-items: center;
   width: 44px;
   height: 44px;
   border: 0;
+  color: var(--teal-dark);
   background: transparent;
-}
-
-.menu-toggle span {
-  display: block;
-  width: 24px;
-  height: 2px;
-  margin: 5px auto;
-  background: var(--teal-dark);
 }
 
 .app {
@@ -1160,9 +1176,16 @@ img {
 }
 
 .mobile-menu nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   padding: 16px 4px;
   border-bottom: 1px solid var(--line);
   font-weight: 800;
+}
+
+.mobile-menu nav .icon {
+  color: var(--teal);
 }
 
 .bottom-nav {
@@ -1499,8 +1522,10 @@ img {
     font-size: 0;
   }
 
-  .desktop-nav span {
-    font-size: 25px;
+  .desktop-nav .icon {
+    width: 25px;
+    height: 25px;
+    flex-basis: 25px;
   }
 
   .desktop-nav a:hover,
@@ -1531,7 +1556,7 @@ img {
   }
 
   .menu-toggle {
-    display: block;
+    display: grid;
   }
 
   .postcard-row,
@@ -1781,7 +1806,12 @@ img {
     place-items: center;
     gap: 3px;
     color: #425d69;
-    font-size: 19px;
+  }
+
+  .bottom-nav .icon {
+    width: 22px;
+    height: 22px;
+    flex-basis: 22px;
   }
 
   .bottom-nav span {

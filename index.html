@@ -8,6 +8,33 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="icon-globe" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+      <path d="M2 12h20"></path>
+    </symbol>
+    <symbol id="icon-briefcase" viewBox="0 0 24 24">
+      <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+      <rect x="2" y="6" width="20" height="14" rx="2"></rect>
+    </symbol>
+    <symbol id="icon-heart" viewBox="0 0 24 24">
+      <path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3.4.9-4.5 2.3A5.6 5.6 0 0 0 7.5 3 5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"></path>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <path d="m21 21-4.3-4.3"></path>
+      <circle cx="11" cy="11" r="8"></circle>
+    </symbol>
+    <symbol id="icon-user-round" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="5"></circle>
+      <path d="M20 21a8 8 0 0 0-16 0"></path>
+    </symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24">
+      <path d="M4 12h16"></path>
+      <path d="M4 18h16"></path>
+      <path d="M4 6h16"></path>
+    </symbol>
+  </svg>
   <header class="site-header">
     <a class="brand" href="#home" aria-label="Postoria 首頁">
       <span class="brand-mark" aria-hidden="true">
@@ -21,21 +48,21 @@
     </a>
 
     <nav class="desktop-nav" aria-label="主要導覽">
-      <a href="#explore" data-scroll="explore"><span>◎</span>探索世界</a>
-      <a href="#popular" data-scroll="popular"><span>♨</span>熱門收藏</a>
-      <a href="#latest" data-scroll="latest"><span>♡</span>收藏喜愛</a>
+      <a href="#explore" data-scroll="explore"><svg class="icon"><use href="#icon-globe"></use></svg>探索世界</a>
+      <a href="#popular" data-scroll="popular"><svg class="icon"><use href="#icon-briefcase"></use></svg>熱門收藏</a>
+      <a href="#latest" data-scroll="latest"><svg class="icon"><use href="#icon-heart"></use></svg>收藏喜愛</a>
     </nav>
 
     <form class="header-search" data-search>
       <input name="keyword" type="search" placeholder="搜尋標題、編號、#hashtag" aria-label="搜尋明信片">
-      <button type="submit" aria-label="搜尋">⌕</button>
+      <button type="submit" aria-label="搜尋"><svg class="icon"><use href="#icon-search"></use></svg></button>
     </form>
 
     <div class="header-actions">
       <a class="ghost-button" href="#login">登入</a>
       <a class="solid-button" href="#register">註冊會員</a>
       <button class="menu-toggle" type="button" aria-label="開啟選單" data-menu-toggle>
-        <span></span><span></span><span></span>
+        <svg class="icon"><use href="#icon-menu"></use></svg>
       </button>
     </div>
   </header>
@@ -47,12 +74,12 @@
       <span class="brand-copy"><strong>POSTORIA</strong></span>
     </a>
     <nav aria-label="手機導覽">
-      <a href="#explore" data-scroll="explore">◎ 探索世界</a>
-      <a href="#popular" data-scroll="popular">♨ 熱門收藏</a>
-      <a href="#latest" data-scroll="latest">♡ 收藏喜愛</a>
+      <a href="#explore" data-scroll="explore"><svg class="icon"><use href="#icon-globe"></use></svg>探索世界</a>
+      <a href="#popular" data-scroll="popular"><svg class="icon"><use href="#icon-briefcase"></use></svg>熱門收藏</a>
+      <a href="#latest" data-scroll="latest"><svg class="icon"><use href="#icon-heart"></use></svg>收藏喜愛</a>
       <a href="#upload">⇧ 上傳明信片</a>
       <a href="#comments">▣ 明信片評論</a>
-      <a href="#login">登入</a>
+      <a href="#login"><svg class="icon"><use href="#icon-user-round"></use></svg>登入</a>
       <a class="solid-button" href="#register">註冊會員</a>
     </nav>
   </aside>
@@ -76,10 +103,10 @@
 
   <nav class="bottom-nav" aria-label="手機底部導覽">
     <a href="#home">⌂<span>首頁</span></a>
-    <a href="#explore" data-scroll="explore">⌕<span>探索世界</span></a>
-    <a href="#popular" data-scroll="popular">♨<span>熱門收藏</span></a>
-    <a href="#latest" data-scroll="latest">♡<span>收藏喜愛</span></a>
-    <a href="#login">●<span>會員專區</span></a>
+    <a href="#explore" data-scroll="explore"><svg class="icon"><use href="#icon-globe"></use></svg><span>探索世界</span></a>
+    <a href="#popular" data-scroll="popular"><svg class="icon"><use href="#icon-briefcase"></use></svg><span>熱門收藏</span></a>
+    <a href="#latest" data-scroll="latest"><svg class="icon"><use href="#icon-heart"></use></svg><span>收藏喜愛</span></a>
+    <a href="#login"><svg class="icon"><use href="#icon-user-round"></use></svg><span>會員專區</span></a>
   </nav>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
