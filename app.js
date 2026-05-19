@@ -127,12 +127,18 @@ async function loadHomeData() {
   state.homeLoading = true;
 
   try {
-    const response = await fetch(`${API_BASE}/api/postoria/home`);
+    const [response, countriesResponse] = await Promise.all([
+      fetch(`${API_BASE}/api/postoria/home`),
+      fetch(`${API_BASE}/api/postoria/countries`)
+    ]);
     if (!response.ok) {
       throw new Error(`home api ${response.status}`);
     }
+    if (!countriesResponse.ok) {
+      throw new Error(`countries api ${countriesResponse.status}`);
+    }
 
-    state.home = normalizeHomeData(await response.json());
+    state.home = normalizeHomeData(await response.json(), await countriesResponse.json());
     state.homeError = "";
     render();
   } catch {
@@ -142,7 +148,7 @@ async function loadHomeData() {
   }
 }
 
-function normalizeHomeData(data) {
+function normalizeHomeData(data, allCountries = null) {
   const banners = (data.banners || [])
     .filter(item => item.imageUrl)
     .map(item => ({
@@ -152,7 +158,7 @@ function normalizeHomeData(data) {
 
   return {
     banners: banners.length ? banners : heroSlides,
-    countries: (data.countries || []).map(item => [
+    countries: (allCountries || data.countries || []).map(item => [
       item.name,
       item.englishName || item.name,
       `${Number(item.count || 0).toLocaleString()} 張明信片`,
@@ -292,6 +298,7 @@ function renderHome() {
         <div class="country-grid">
           ${home.countries.map(countryCard).join("")}
         </div>
+        ${cityRail()}
       </section>
 
       ${catalogPanel()}
@@ -377,8 +384,9 @@ function renderHeroOnly() {
 }
 
 function countryCard([name, english, count, image]) {
+  const active = state.catalog.country === name;
   return `
-    <article class="country-card" data-country="${escapeAttr(name)}">
+    <article class="country-card ${active ? "active" : ""}" data-country="${escapeAttr(name)}">
       <img src="${image}" alt="${name}">
       <div><h3>${name}</h3><small>${english}</small><p>${count}</p></div>
     </article>
@@ -474,16 +482,6 @@ function catalogPanel() {
           <button class="link-button ${state.catalog.sort === "popular" ? "active" : ""}" type="button" data-sort="popular">熱門</button>
         </div>
       </div>
-      ${state.catalog.cities.length ? `
-        <div class="city-tabs">
-          <button type="button" class="${!state.catalog.city ? "active" : ""}" data-city="">全部地區</button>
-          ${state.catalog.cities.map(city => `
-            <button type="button" class="${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}">
-              ${city.name}<span>${city.count}</span>
-            </button>
-          `).join("")}
-        </div>
-      ` : ""}
       ${state.catalog.error ? `<p class="api-note">${state.catalog.error}</p>` : ""}
       <div class="catalog-grid">
         ${state.catalog.items.map(catalogCard).join("")}
@@ -496,6 +494,31 @@ function catalogPanel() {
         </div>
       ` : ""}
     </section>
+  `;
+}
+
+function cityRail() {
+  if (!state.catalog.country) return "";
+  if (state.catalog.loading && !state.catalog.cities.length) {
+    return `<div class="city-rail"><p>地區讀取中...</p></div>`;
+  }
+  if (!state.catalog.cities.length) return "";
+
+  return `
+    <div class="city-rail">
+      <div class="city-rail-title">
+        <strong>${state.catalog.country}</strong>
+        <span>選擇地區瀏覽明信片</span>
+      </div>
+      <div class="city-tabs">
+        <button type="button" class="${!state.catalog.city ? "active" : ""}" data-city="">全部地區</button>
+        ${state.catalog.cities.map(city => `
+          <button type="button" class="${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}">
+            ${city.name}<span>${city.count}</span>
+          </button>
+        `).join("")}
+      </div>
+    </div>
   `;
 }
 

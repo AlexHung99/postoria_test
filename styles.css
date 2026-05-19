@@ -349,11 +349,18 @@ img {
   background: var(--teal);
 }
 
-.country-grid,
 .postcard-row {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 20px;
+}
+
+.country-grid {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 2px 4px 12px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
 }
 
 .postcard-row {
@@ -380,12 +387,19 @@ img {
 .country-card {
   overflow: hidden;
   cursor: pointer;
+  flex: 0 0 178px;
+  scroll-snap-align: start;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .country-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 16px 30px rgba(15, 48, 60, 0.12);
+}
+
+.country-card.active {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0, 106, 112, 0.14), 0 16px 30px rgba(15, 48, 60, 0.12);
 }
 
 .country-card img {
@@ -596,6 +610,36 @@ img {
   gap: 10px;
   overflow-x: auto;
   padding: 0 0 14px;
+}
+
+.city-rail {
+  margin-top: 10px;
+  padding: 18px 20px 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 24px rgba(15, 48, 60, 0.07);
+}
+
+.city-rail p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.city-rail-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.city-rail-title strong {
+  font-size: 20px;
+}
+
+.city-rail-title span {
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .city-tabs button {
@@ -1010,10 +1054,6 @@ img {
     display: block;
   }
 
-  .country-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .postcard-row,
   .postcard-row.compact,
   .catalog-grid {
@@ -1075,7 +1115,6 @@ img {
     font-size: 22px;
   }
 
-  .country-grid,
   .postcard-row,
   .postcard-row.compact {
     display: flex;
@@ -1087,8 +1126,11 @@ img {
 
   .country-card,
   .postcard-card {
-    flex: 0 0 168px;
     scroll-snap-align: start;
+  }
+
+  .country-card {
+    flex-basis: 168px;
   }
 
   .postcard-row .postcard-card {
