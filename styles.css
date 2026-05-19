@@ -214,6 +214,13 @@ img {
   display: none;
 }
 
+#popular,
+#latest,
+#search,
+.feature-strip {
+  display: none;
+}
+
 .hero {
   position: relative;
   overflow: hidden;
