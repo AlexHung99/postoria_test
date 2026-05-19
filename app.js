@@ -1,6 +1,6 @@
 const defaultApiBase = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? "http://localhost:5073"
-  : "http://122.116.181.61:5073";
+  : "https://api.postoria.net";
 const API_BASE = localStorage.getItem("postoria-api-base") || defaultApiBase;
 
 const app = document.querySelector("#app");
