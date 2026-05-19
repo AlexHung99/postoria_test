@@ -484,6 +484,8 @@ function searchResults() {
 function catalogPanel() {
   if (!state.catalog.active) return "";
   if (state.catalog.country && !state.catalog.showPostcards) return "";
+  if (state.catalog.country && state.catalog.city) return cityCatalogPanel();
+
   const title = state.catalog.keyword
     ? `搜尋：${state.catalog.keyword}`
     : state.catalog.city
@@ -517,6 +519,70 @@ function catalogPanel() {
   `;
 }
 
+function cityCatalogPanel() {
+  const activeCity = state.catalog.cities.find(city => city.name === state.catalog.city) || {};
+  const cityImage = activeCity.imageUrl || state.catalog.items[0]?.image || "assets/hero-sunset.jpg";
+
+  return `
+    <section class="catalog-panel catalog-modal" id="catalog" aria-label="${state.catalog.city} 明信片清單">
+      <aside class="catalog-sidebar">
+        <div class="catalog-sidebar-heading">
+          <strong>探索世界</strong>
+          <span>選擇城市瀏覽明信片</span>
+        </div>
+        <div class="catalog-city-list">
+          ${state.catalog.cities.map(city => `
+            <button type="button" class="${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}" data-show-postcards="true">
+              <img src="${city.imageUrl || "assets/hero-sunset.jpg"}" alt="${city.name}">
+              <span><strong>${city.name}</strong><small>${city.count.toLocaleString()} 張</small></span>
+            </button>
+          `).join("")}
+        </div>
+      </aside>
+
+      <div class="catalog-main">
+        <header class="catalog-modal-header">
+          <div class="catalog-place">
+            <img src="${cityImage}" alt="${state.catalog.city}">
+            <div>
+              <h2>${state.catalog.city}</h2>
+              <p>${state.catalog.country}</p>
+            </div>
+          </div>
+          <div class="catalog-summary">
+            <span>${state.catalog.loading ? "讀取中..." : `共 ${state.catalog.total.toLocaleString()} 張明信片`}</span>
+            <button type="button" class="catalog-close" data-action="close-catalog" aria-label="關閉明信片清單">×</button>
+          </div>
+        </header>
+
+        <div class="catalog-modal-tools">
+          <form data-search data-search-scope="catalog" class="catalog-search">
+            <input name="keyword" type="search" placeholder="搜尋明信片標題、標籤...">
+            <button type="submit" aria-label="搜尋">⌕</button>
+          </form>
+          <div class="catalog-tools">
+            <button class="link-button ${state.catalog.sort === "latest" ? "active" : ""}" type="button" data-sort="latest">最新上傳</button>
+            <button class="link-button ${state.catalog.sort === "popular" ? "active" : ""}" type="button" data-sort="popular">熱門</button>
+          </div>
+        </div>
+
+        ${state.catalog.error ? `<p class="api-note">${state.catalog.error}</p>` : ""}
+        <div class="catalog-grid">
+          ${state.catalog.items.map(catalogCard).join("")}
+        </div>
+        ${!state.catalog.loading && !state.catalog.items.length ? `<p class="api-note">這個城市目前還沒有明信片。</p>` : ""}
+        ${state.catalog.totalPages > 1 ? `
+          <div class="pagination">
+            <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>‹</button>
+            <span>${state.catalog.page} / ${state.catalog.totalPages}</span>
+            <button type="button" data-page="${Math.min(state.catalog.totalPages, state.catalog.page + 1)}" ${state.catalog.page >= state.catalog.totalPages ? "disabled" : ""}>›</button>
+          </div>
+        ` : ""}
+      </div>
+    </section>
+  `;
+}
+
 function cityRail() {
   if (!state.catalog.country) return "";
   if (state.catalog.loading && !state.catalog.cities.length) {
@@ -531,7 +597,6 @@ function cityRail() {
         <span>選擇地區瀏覽明信片</span>
       </div>
       <div class="city-tabs">
-        <button type="button" class="${!state.catalog.city && state.catalog.showPostcards ? "active" : ""}" data-city="" data-show-postcards="true">全部地區</button>
         ${state.catalog.cities.map(city => `
           <article class="city-card ${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}" data-show-postcards="true" role="button" tabindex="0">
             <img src="${city.imageUrl || "assets/hero-sunset.jpg"}" alt="${city.name}">
@@ -548,11 +613,13 @@ function cityRail() {
 
 function catalogCard(card) {
   const active = state.favorites.includes(card.id);
+  const tags = (card.tags || []).slice(0, 3);
   return `
     <article class="postcard-card">
       <img src="${card.image}" alt="${card.title}">
       <div>
         <h3>${card.title}</h3>
+        ${tags.length ? `<div class="postcard-tags">${tags.map(tag => `<span>#${tag}</span>`).join("")}</div>` : ""}
         <p>${card.meta}</p>
         <footer>
           <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${card.id}">${active ? "♥" : "♡"} ${card.likes}</button>
@@ -735,7 +802,11 @@ async function handleSubmit(event) {
       return;
     }
     state.search = keyword.replace(/^#/, "");
-    openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, showPostcards: true });
+    if (searchForm.dataset.searchScope === "catalog") {
+      openCatalog({ keyword: state.search, page: 1, showPostcards: true });
+    } else {
+      openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, showPostcards: true });
+    }
     showToast(`已搜尋「${keyword}」`);
     return;
   }
@@ -874,6 +945,22 @@ function handleClick(event) {
   if (action?.dataset.action === "clear-search") {
     state.search = "";
     render();
+    return;
+  }
+
+  if (action?.dataset.action === "close-catalog") {
+    state.catalog = {
+      ...state.catalog,
+      city: "",
+      keyword: "",
+      showPostcards: false,
+      items: [],
+      total: 0,
+      totalPages: 0,
+      error: ""
+    };
+    render();
+    requestAnimationFrame(() => document.querySelector("#explore")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     return;
   }
 
