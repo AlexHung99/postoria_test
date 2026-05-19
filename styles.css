@@ -1509,7 +1509,7 @@ img {
 
   .desktop-nav {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 18px;
   }
 
