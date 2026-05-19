@@ -318,7 +318,7 @@ function renderHome() {
       <section class="section-block" id="explore">
         <div class="section-heading">
           <div>
-            <h2><svg class="icon"><use href="#icon-globe"></use></svg>探索世界 <small>依照國家與城市分類</small></h2>
+            <h2 class="explore-title"><svg class="icon"><use href="#icon-globe"></use></svg>探索世界 <small>依照國家與城市分類</small></h2>
           </div>
         </div>
         <div class="country-grid">

@@ -292,6 +292,10 @@ img {
   font-weight: 700;
 }
 
+.section-heading .explore-title {
+  font-size: 24px;
+}
+
 .section-heading h2 span,
 .section-heading h2 .icon {
   color: var(--teal);
