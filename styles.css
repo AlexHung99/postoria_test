@@ -432,11 +432,14 @@ img {
 .postcard-card {
   position: relative;
   overflow: hidden;
+  min-width: 0;
 }
 
 .postcard-card img {
   width: 100%;
+  max-width: 100%;
   aspect-ratio: 1.35;
+  height: auto;
   object-fit: cover;
 }
 
@@ -687,6 +690,7 @@ img {
 
 .catalog-main {
   min-width: 0;
+  overflow: hidden;
 }
 
 .catalog-modal-header {
@@ -923,10 +927,33 @@ img {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
+  min-width: 0;
+  width: 100%;
 }
 
 .catalog-modal .catalog-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.catalog-modal .postcard-card {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.catalog-modal .postcard-card img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: clamp(160px, 16vw, 230px);
+  aspect-ratio: auto;
+  object-fit: cover;
+}
+
+.catalog-modal .postcard-card h3,
+.catalog-modal .postcard-card p,
+.catalog-modal .postcard-card footer {
+  overflow-wrap: anywhere;
 }
 
 .postcard-tags {
@@ -1465,6 +1492,11 @@ img {
 
   .catalog-modal .catalog-grid {
     grid-template-columns: 1fr;
+  }
+
+  .catalog-modal .postcard-card img {
+    height: auto;
+    aspect-ratio: 1.35;
   }
 
   .search-panel {
