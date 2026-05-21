@@ -634,12 +634,11 @@ function catalogCard(card) {
         <small class="postcard-number">編號 ${cardNumber}</small>
         <h3>${card.title}</h3>
         ${tags.length ? `<div class="postcard-tags">${tags.map(tag => `<span>#${tag}</span>`).join("")}</div>` : ""}
-        <p>${card.meta}</p>
         <div class="postcard-details">
           <div class="postcard-detail-row">
             <span>座標</span>
             <strong>${coordinates || "未提供"}</strong>
-            ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}">複製</button>` : ""}
+            ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" aria-label="複製座標" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}
           </div>
           <div class="postcard-detail-row">
             <span>取得方式</span>

@@ -1081,15 +1081,21 @@ img {
 }
 
 .copy-coordinate-button {
-  min-height: 30px;
-  padding: 0 10px;
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
   border: 1px solid rgba(0, 106, 112, 0.24);
-  border-radius: 999px;
+  border-radius: 50%;
   color: var(--teal-dark);
   background: #fff;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 900;
+}
+
+.copy-coordinate-button .icon {
+  width: 16px;
+  height: 16px;
 }
 
 .copy-coordinate-button:hover,
@@ -1868,7 +1874,8 @@ img {
   }
 
   .copy-coordinate-button {
-    padding: 0 12px;
+    width: 34px;
+    height: 34px;
   }
 
   .search-lightbox {
