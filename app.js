@@ -195,7 +195,10 @@ function mapApiPostcard(item) {
     likes: Number(item.likeCount || 0).toLocaleString(),
     views: Number(item.viewCount || 0).toLocaleString(),
     tags: item.tags || [],
-    legacyNumber: item.legacyNumber
+    legacyNumber: item.legacyNumber,
+    latitude: item.latitude,
+    longitude: item.longitude,
+    postcardType: item.postcardType
   };
 }
 
@@ -617,6 +620,8 @@ function catalogCard(card) {
   const active = state.favorites.includes(card.id);
   const tags = (card.tags || []).slice(0, 3);
   const cardNumber = card.legacyNumber || card.id;
+  const coordinates = formatCoordinates(card);
+  const obtainLabel = postcardTypeLabel(card.postcardType);
   return `
     <article class="postcard-card">
       <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
@@ -625,6 +630,17 @@ function catalogCard(card) {
         <h3>${card.title}</h3>
         ${tags.length ? `<div class="postcard-tags">${tags.map(tag => `<span>#${tag}</span>`).join("")}</div>` : ""}
         <p>${card.meta}</p>
+        <div class="postcard-details">
+          <div class="postcard-detail-row">
+            <span>座標</span>
+            <strong>${coordinates || "未提供"}</strong>
+            ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}">複製</button>` : ""}
+          </div>
+          <div class="postcard-detail-row">
+            <span>取得方式</span>
+            <strong>${obtainLabel}</strong>
+          </div>
+        </div>
         <footer>
           <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${card.id}">${active ? "♥" : "♡"} ${card.likes}</button>
           <span>◎ ${card.views}</span>
@@ -632,6 +648,22 @@ function catalogCard(card) {
       </div>
     </article>
   `;
+}
+
+function formatCoordinates(card) {
+  const latitude = Number(card.latitude);
+  const longitude = Number(card.longitude);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return "";
+  return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+}
+
+function postcardTypeLabel(type) {
+  const labels = {
+    MUSHROOM: "打菇",
+    FLOWER: "花",
+    EXPLORATION: "探索"
+  };
+  return labels[String(type || "").toUpperCase()] || "未提供";
 }
 
 function escapeAttr(value) {
@@ -861,7 +893,7 @@ async function handleSubmit(event) {
   }
 }
 
-function handleClick(event) {
+async function handleClick(event) {
   const headerSearchButton = event.target.closest(".header-search button");
   if (headerSearchButton) {
     const form = headerSearchButton.closest(".header-search");
@@ -961,6 +993,14 @@ function handleClick(event) {
     return;
   }
 
+  const copyCoordinates = event.target.closest("[data-copy-coordinates]");
+  if (copyCoordinates) {
+    const text = copyCoordinates.dataset.copyCoordinates;
+    const copied = await copyText(text);
+    showToast(copied ? "座標已複製" : "無法複製座標，請手動選取");
+    return;
+  }
+
   const action = event.target.closest("[data-action]");
   if (action?.dataset.action === "clear-search") {
     state.search = "";
@@ -995,6 +1035,40 @@ function handleClick(event) {
     showToast(`${action.dataset.label}需登入會員後使用`);
     location.hash = "login";
   }
+}
+
+async function copyText(text) {
+  if (!text) return false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Fall back to the legacy selection path below.
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "0";
+  textarea.style.left = "0";
+  textarea.style.width = "1px";
+  textarea.style.height = "1px";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.focus({ preventScroll: true });
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+  textarea.remove();
+  return copied;
 }
 
 function openSearchLightbox(value = "") {

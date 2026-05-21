@@ -1047,6 +1047,57 @@ img {
   letter-spacing: 0;
 }
 
+.postcard-details {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.postcard-detail-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #31515b;
+  background: #f3f7f7;
+  font-size: 13px;
+}
+
+.postcard-detail-row span {
+  color: var(--muted);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.postcard-detail-row strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-coordinate-button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(0, 106, 112, 0.24);
+  border-radius: 999px;
+  color: var(--teal-dark);
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.copy-coordinate-button:hover,
+.copy-coordinate-button:focus-visible {
+  border-color: var(--teal);
+  outline: 0;
+}
+
 .postcard-tags span {
   padding: 5px 9px;
   border-radius: 8px;
@@ -1762,6 +1813,18 @@ img {
     grid-template-columns: 1fr;
   }
 
+  .catalog-modal-header {
+    padding-bottom: 12px;
+  }
+
+  .catalog-place {
+    display: none;
+  }
+
+  .catalog-summary {
+    justify-content: space-between;
+  }
+
   .catalog-place img {
     width: 64px;
     height: 64px;
@@ -1789,6 +1852,23 @@ img {
     height: clamp(180px, 54vw, 260px);
     aspect-ratio: auto;
     object-fit: contain;
+  }
+
+  .postcard-details {
+    gap: 7px;
+  }
+
+  .postcard-detail-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 9px 10px;
+  }
+
+  .postcard-detail-row strong {
+    white-space: normal;
+  }
+
+  .copy-coordinate-button {
+    padding: 0 12px;
   }
 
   .search-lightbox {
