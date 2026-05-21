@@ -253,7 +253,12 @@ async function openCatalog(next = {}) {
 
   render();
   if (!(state.catalog.country && state.catalog.city && state.catalog.showPostcards)) {
-    requestAnimationFrame(() => document.querySelector("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    requestAnimationFrame(() => {
+      const target = state.catalog.country && !state.catalog.city && !state.catalog.showPostcards
+        ? document.querySelector("#city-list")
+        : document.querySelector("#catalog");
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 }
 
@@ -591,12 +596,12 @@ function cityCatalogPanel() {
 function cityRail() {
   if (!state.catalog.country) return "";
   if (state.catalog.loading && !state.catalog.cities.length) {
-    return `<div class="city-rail"><p>地區讀取中...</p></div>`;
+    return `<div class="city-rail" id="city-list"><p>地區讀取中...</p></div>`;
   }
   if (!state.catalog.cities.length) return "";
 
   return `
-    <div class="city-rail">
+    <div class="city-rail" id="city-list">
       <div class="city-rail-title">
         <strong>${state.catalog.country}</strong>
         <span>選擇地區瀏覽明信片</span>
