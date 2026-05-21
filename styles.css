@@ -214,6 +214,14 @@ img {
   display: none;
 }
 
+.home-shell.country-mode {
+  padding-top: 4px;
+}
+
+.home-shell.country-mode .explore-section {
+  padding-top: 10px;
+}
+
 #popular,
 #latest,
 #search,
@@ -346,6 +354,19 @@ img {
   padding: 2px 4px 12px;
   scroll-snap-type: x proximity;
   scrollbar-width: thin;
+}
+
+.home-shell.country-mode .country-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  overflow: visible;
+  padding: 2px 0 10px;
+  scroll-snap-type: none;
+}
+
+.home-shell.country-mode .country-card {
+  flex: initial;
+  scroll-snap-align: none;
 }
 
 .postcard-row {
@@ -841,6 +862,14 @@ img {
   scrollbar-width: thin;
 }
 
+.home-shell.country-mode .city-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  overflow: visible;
+  padding: 2px 0 10px;
+  scroll-snap-type: none;
+}
+
 .city-rail {
   margin-top: 10px;
   padding: 18px 20px 10px;
@@ -916,6 +945,11 @@ img {
   cursor: pointer;
   scroll-snap-align: start;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.home-shell.country-mode .city-card {
+  flex: initial;
+  scroll-snap-align: none;
 }
 
 .city-card:hover,

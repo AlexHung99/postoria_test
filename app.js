@@ -306,16 +306,19 @@ function renderHome() {
   };
   const activeBanners = home.banners.length ? home.banners : heroSlides;
   const searchMode = Boolean(state.search || state.catalog.keyword);
+  const countryMode = Boolean(state.catalog.country);
   state.slide = state.slide % activeBanners.length;
 
   return `
-    <section class="home-shell ${searchMode ? "search-mode" : ""}">
-      <div class="hero" id="hero">
-        ${heroMarkup(activeBanners)}
-      </div>
+    <section class="home-shell ${searchMode ? "search-mode" : ""} ${countryMode ? "country-mode" : ""}">
+      ${countryMode ? "" : `
+        <div class="hero" id="hero">
+          ${heroMarkup(activeBanners)}
+        </div>
+      `}
       ${state.homeError ? `<p class="api-note">${state.homeError}</p>` : ""}
 
-      <section class="section-block" id="explore">
+      <section class="section-block explore-section" id="explore">
         <div class="section-heading">
           <div>
             <h2 class="explore-title"><svg class="icon"><use href="#icon-globe"></use></svg>探索世界 <small>依照國家與城市分類</small></h2>
