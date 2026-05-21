@@ -276,7 +276,32 @@ function showToast(message) {
 }
 
 function getRoute() {
-  return location.hash.replace(/^#+/, "") || "home";
+  return (location.hash.replace(/^#+/, "").split("?")[0] || "home");
+}
+
+function externalAuthUrl(provider) {
+  const returnUrl = `${location.origin}${location.pathname}${location.search}#login-success`;
+  return `${API_BASE}/api/external-auth/${provider}/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+}
+
+function consumeExternalAuthResult() {
+  const hash = location.hash.replace(/^#+/, "");
+  const [, query = ""] = hash.split("?");
+  if (!query) return false;
+
+  const params = new URLSearchParams(query);
+  const memberPayload = params.get("member");
+  const accessToken = params.get("accessToken");
+  const expiresAt = params.get("expiresAt");
+  if (!memberPayload || !accessToken) return false;
+
+  try {
+    setSession(JSON.parse(memberPayload), accessToken, expiresAt || "");
+    history.replaceState(null, "", `${location.pathname}${location.search}#login-success`);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function setStatus(form, message, isError = false) {
@@ -714,7 +739,8 @@ function loginCard() {
         <button class="primary-button" type="submit">登入</button>
         <p class="status"></p>
       </form>
-      <p class="switch-line">測試階段請先使用電子郵件登入。</p>
+      ${externalAuthActions("login")}
+      <p class="switch-line">已經有 Google 帳號也可以直接登入。</p>
     </article>
   `;
 }
@@ -738,8 +764,20 @@ function registerCard() {
         <button class="primary-button" type="submit">註冊</button>
         <p class="status"></p>
       </form>
+      ${externalAuthActions("register")}
       <p class="switch-line">已經有帳號？ <a class="text-link" href="#login">立即登入</a></p>
     </article>
+  `;
+}
+
+function externalAuthActions(mode = "login") {
+  const label = mode === "register" ? "使用 Google 註冊" : "使用 Google 登入";
+  return `
+    <div class="auth-divider"><span>或</span></div>
+    <a class="google-auth-button" href="${externalAuthUrl("google")}">
+      <span class="google-mark" aria-hidden="true">G</span>
+      ${label}
+    </a>
   `;
 }
 
@@ -1065,6 +1103,9 @@ function closeCatalogModal() {
 
 function render() {
   const route = getRoute();
+  if (route === "login-success") {
+    consumeExternalAuthResult();
+  }
   document.body.classList.toggle("catalog-modal-open", false);
   if (route !== "forgot") {
     sessionStorage.removeItem("postoria-reset-sent");
