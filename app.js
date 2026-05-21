@@ -204,6 +204,7 @@ function mapApiPostcard(item) {
 
 async function openCatalog(next = {}) {
   const showPostcards = next.showPostcards ?? state.catalog.showPostcards ?? false;
+  const isCountryBrowse = Boolean(next.country && !next.city && !showPostcards);
   state.catalog = {
     ...state.catalog,
     ...next,
@@ -213,7 +214,7 @@ async function openCatalog(next = {}) {
     showPostcards,
     page: next.page || 1
   };
-  render();
+  if (!isCountryBrowse) render();
 
   try {
     const query = new URLSearchParams();
@@ -339,53 +340,6 @@ function renderHome() {
       </section>
 
       ${catalogPanel()}
-
-      <section class="section-block" id="popular">
-        <div class="section-heading">
-          <div>
-            <h2><span>♨</span>熱門收藏</h2>
-            <p>依收藏數排序</p>
-          </div>
-          <button class="link-button" type="button" data-action="view-all" data-view-sort="popular" data-label="熱門收藏">查看全部 ›</button>
-        </div>
-        <div class="postcard-row">
-          ${home.popular.map((card, index) => postcardCard(card, index + 1)).join("")}
-        </div>
-      </section>
-
-      <section class="section-block" id="latest">
-        <div class="section-heading">
-          <div>
-            <h2><span>✦</span>最新上架</h2>
-            <p>最新加入的明信片</p>
-          </div>
-          <button class="link-button" type="button" data-action="view-all" data-view-sort="latest" data-label="最新上架">查看全部 ›</button>
-        </div>
-        <div class="postcard-row compact">
-          ${home.latest.map(newCard).join("")}
-        </div>
-      </section>
-
-      <section class="search-panel" id="search">
-        <div class="search-title">
-          <span>⌕</span>
-          <div>
-            <h2>查詢明信片</h2>
-            <p>可搜尋標題、編號或 #hashtag</p>
-          </div>
-        </div>
-        <form data-search class="search-box">
-          <input name="keyword" type="search" placeholder="搜尋標題、編號、#hashtag">
-          <button class="solid-button" type="submit">搜尋</button>
-        </form>
-        <div class="tags" aria-label="熱門搜尋">
-          <button type="button" data-keyword="日本">#日本</button>
-          <button type="button" data-keyword="東京">#東京</button>
-          <button type="button" data-keyword="巴黎">#巴黎</button>
-          <button type="button" data-keyword="海邊">#海邊</button>
-          <button type="button" data-keyword="日落">#日落</button>
-        </div>
-      </section>
 
       ${state.search ? searchResults() : ""}
 
@@ -675,7 +629,7 @@ function escapeAttr(value) {
 }
 
 function imageFallbackAttr() {
-  return `loading="lazy" onerror="this.onerror=null;this.src='assets/hero-sunset.jpg';"`;
+  return `loading="lazy" decoding="async" onerror="this.onerror=null;this.src='assets/hero-sunset.jpg';"`;
 }
 
 function siteFooter() {
