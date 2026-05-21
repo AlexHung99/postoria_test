@@ -684,9 +684,9 @@ function field({ icon, name, type = "text", placeholder, autocomplete = "", requ
   const password = type === "password";
   return `
     <label class="field">
-      <span aria-hidden="true">${icon}</span>
+      <svg class="icon field-icon" aria-hidden="true"><use href="#${icon}"></use></svg>
       <input name="${name}" type="${type}" placeholder="${placeholder}" ${autocomplete ? `autocomplete="${autocomplete}"` : ""} ${required ? "required" : ""}>
-      ${password ? `<button class="toggle-password" type="button" aria-label="顯示或隱藏密碼">◌</button>` : ""}
+      ${password ? `<button class="toggle-password" type="button" aria-label="顯示或隱藏密碼"><svg class="icon"><use href="#icon-eye"></use></svg></button>` : ""}
     </label>
   `;
 }
@@ -730,8 +730,8 @@ function loginCard() {
       <h2>登入</h2>
       <p class="subtitle">還沒有帳號？ <a href="#register">立即註冊</a></p>
       <form class="auth-form" data-form="login">
-        ${field({ icon: "✉", name: "email", type: "email", placeholder: "電子郵件地址", autocomplete: "email" })}
-        ${field({ icon: "▣", name: "password", type: "password", placeholder: "密碼", autocomplete: "current-password" })}
+        ${field({ icon: "icon-mail", name: "email", type: "email", placeholder: "電子郵件地址", autocomplete: "email" })}
+        ${field({ icon: "icon-lock-keyhole", name: "password", type: "password", placeholder: "密碼", autocomplete: "current-password" })}
         <div class="form-row">
           <label class="check"><input name="remember" type="checkbox"> 記住我</label>
           <a class="text-link" href="#forgot">忘記密碼？</a>
@@ -753,10 +753,10 @@ function registerCard() {
       <h2>註冊會員</h2>
       <p class="subtitle">加入我們，收藏美好時刻，分享世界！</p>
       <form class="auth-form" data-form="register">
-        ${field({ icon: "○", name: "displayName", placeholder: "用戶名稱", autocomplete: "name" })}
-        ${field({ icon: "✉", name: "email", type: "email", placeholder: "電子郵件", autocomplete: "email" })}
-        ${field({ icon: "▣", name: "password", type: "password", placeholder: "密碼", autocomplete: "new-password" })}
-        ${field({ icon: "▣", name: "confirmPassword", type: "password", placeholder: "確認密碼", autocomplete: "new-password" })}
+        ${field({ icon: "icon-user", name: "displayName", placeholder: "用戶名稱", autocomplete: "name" })}
+        ${field({ icon: "icon-mail", name: "email", type: "email", placeholder: "電子郵件", autocomplete: "email" })}
+        ${field({ icon: "icon-lock-keyhole", name: "password", type: "password", placeholder: "密碼", autocomplete: "new-password" })}
+        ${field({ icon: "icon-lock-keyhole", name: "confirmPassword", type: "password", placeholder: "確認密碼", autocomplete: "new-password" })}
         <label class="check terms">
           <input name="terms" type="checkbox" required>
           我已閱讀並同意 <a class="text-link" href="#register">服務條款</a> 與 <a class="text-link" href="#register">隱私政策</a>
@@ -802,7 +802,7 @@ function forgotCard(sent = false) {
       <h2>忘記密碼？</h2>
       <p class="subtitle">請輸入您的電子郵件，我們將發送重設密碼的連結給您。</p>
       <form class="auth-form" data-form="forgot">
-        ${field({ icon: "✉", name: "email", type: "email", placeholder: "電子郵件", autocomplete: "email" })}
+        ${field({ icon: "icon-mail", name: "email", type: "email", placeholder: "電子郵件", autocomplete: "email" })}
         <button class="primary-button" type="submit">發送重設連結</button>
         <p class="status"></p>
       </form>

@@ -1305,9 +1305,9 @@ img {
 
 .auth-logo {
   display: block;
-  width: 84px;
-  height: 84px;
-  margin: 0 auto 10px;
+  width: 112px;
+  height: 112px;
+  margin: 0 auto 6px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -1354,6 +1354,12 @@ img {
   background: #fff;
 }
 
+.field-icon {
+  width: 23px;
+  height: 23px;
+  color: var(--teal-dark);
+}
+
 .field input {
   min-width: 0;
   border: 0;
@@ -1362,9 +1368,19 @@ img {
 }
 
 .toggle-password {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
   border: 0;
+  color: #263f4a;
   background: transparent;
   cursor: pointer;
+}
+
+.toggle-password .icon {
+  width: 20px;
+  height: 20px;
 }
 
 .form-row {
