@@ -221,6 +221,13 @@ function mapApiPostcard(item) {
 async function openCatalog(next = {}) {
   const showPostcards = next.showPostcards ?? state.catalog.showPostcards ?? false;
   const isCountryBrowse = Boolean(next.country && !next.city && !showPostcards);
+  const preserveViewport = Boolean(
+    state.catalog.country &&
+    state.catalog.city &&
+    state.catalog.showPostcards &&
+    showPostcards
+  );
+  const viewportSnapshot = preserveViewport ? getCatalogViewportSnapshot() : null;
   state.catalog = {
     ...state.catalog,
     ...next,
@@ -230,7 +237,10 @@ async function openCatalog(next = {}) {
     showPostcards,
     page: next.page || 1
   };
-  if (!isCountryBrowse) render();
+  if (!isCountryBrowse) {
+    render();
+    restoreCatalogViewport(viewportSnapshot);
+  }
 
   try {
     const query = new URLSearchParams();
@@ -269,6 +279,7 @@ async function openCatalog(next = {}) {
   }
 
   render();
+  restoreCatalogViewport(viewportSnapshot);
   if (!(state.catalog.country && state.catalog.city && state.catalog.showPostcards)) {
     requestAnimationFrame(() => {
       const target = state.catalog.country && !state.catalog.city && !state.catalog.showPostcards
@@ -277,6 +288,33 @@ async function openCatalog(next = {}) {
       target?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
+}
+
+function getCatalogViewportSnapshot() {
+  return {
+    windowX: window.scrollX,
+    windowY: window.scrollY,
+    modalTop: document.querySelector(".catalog-modal")?.scrollTop || 0,
+    mainTop: document.querySelector(".catalog-main")?.scrollTop || 0,
+    cityListTop: document.querySelector(".catalog-city-list")?.scrollTop || 0,
+    cityListLeft: document.querySelector(".catalog-city-list")?.scrollLeft || 0
+  };
+}
+
+function restoreCatalogViewport(snapshot) {
+  if (!snapshot) return;
+  requestAnimationFrame(() => {
+    window.scrollTo(snapshot.windowX, snapshot.windowY);
+    const modal = document.querySelector(".catalog-modal");
+    const main = document.querySelector(".catalog-main");
+    const cityList = document.querySelector(".catalog-city-list");
+    if (modal) modal.scrollTop = snapshot.modalTop;
+    if (main) main.scrollTop = snapshot.mainTop;
+    if (cityList) {
+      cityList.scrollTop = snapshot.cityListTop;
+      cityList.scrollLeft = snapshot.cityListLeft;
+    }
+  });
 }
 
 async function fetchJson(path) {
@@ -1084,11 +1122,15 @@ async function handleClick(event) {
 
   const city = event.target.closest("[data-city]");
   if (city) {
+    const showPostcards = city.dataset.showPostcards === "true";
+    if (showPostcards && state.catalog.city === city.dataset.city && state.catalog.showPostcards) {
+      return;
+    }
     openCatalog({
       city: city.dataset.city,
       keyword: "",
       page: 1,
-      showPostcards: city.dataset.showPostcards === "true"
+      showPostcards
     });
     return;
   }
