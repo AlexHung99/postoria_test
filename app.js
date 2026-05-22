@@ -138,14 +138,17 @@ function setSession(member, token, expiresAt) {
   localStorage.setItem("postoria-token", token);
   localStorage.setItem("postoria-token-expires-at", expiresAt || "");
   renderAuthActions();
+  loadMemberFavorites();
 }
 
 function clearSession() {
   state.member = null;
   state.token = "";
+  state.favorites = [];
   localStorage.removeItem("postoria-member");
   localStorage.removeItem("postoria-token");
   localStorage.removeItem("postoria-token-expires-at");
+  localStorage.removeItem("postoria-favorites");
   renderAuthActions();
 }
 
@@ -199,6 +202,7 @@ function normalizeHomeData(data, allCountries = null) {
 function mapApiPostcard(item) {
   return {
     id: item.legacyId || item.id,
+    uid: item.id,
     title: item.title,
     meta: [item.country, item.city].filter(Boolean).join("・"),
     country: item.country || "",
@@ -279,6 +283,43 @@ async function fetchJson(path) {
   const response = await fetch(`${API_BASE}${path}`);
   if (!response.ok) throw new Error(`API ${response.status}`);
   return response.json();
+}
+
+async function fetchAuthorizedJson(path, options = {}) {
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${state.token}`
+    }
+  });
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    throw new Error(data?.message || data?.title || `API ${response.status}`);
+  }
+  return data;
+}
+
+async function loadMemberFavorites() {
+  if (!state.token) return;
+  try {
+    const data = await fetchAuthorizedJson("/api/members/me/favorites");
+    state.favorites = (data.postcardIds || []).map(String);
+    localStorage.setItem("postoria-favorites", JSON.stringify(state.favorites));
+    render();
+  } catch {
+    state.favorites = [];
+    localStorage.removeItem("postoria-favorites");
+  }
+}
+
+function favoriteKey(card) {
+  return String(card.uid || card.id);
+}
+
+function isFavorite(card) {
+  return state.favorites.includes(favoriteKey(card));
 }
 
 function showToast(message) {
@@ -411,7 +452,8 @@ function countryCard([name, english, count, image]) {
 }
 
 function postcardCard(card, rank) {
-  const active = state.favorites.includes(card.id);
+  const active = isFavorite(card);
+  const key = favoriteKey(card);
   return `
     <article class="postcard-card">
       <span class="rank">${rank}</span>
@@ -420,7 +462,7 @@ function postcardCard(card, rank) {
         <h3>${card.title}</h3>
         <p>${card.meta}</p>
         <footer>
-          <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${card.id}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button>
+          <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button>
           <span>◎ ${card.views}</span>
         </footer>
       </div>
@@ -429,7 +471,8 @@ function postcardCard(card, rank) {
 }
 
 function newCard(card) {
-  const active = state.favorites.includes(card.id);
+  const active = isFavorite(card);
+  const key = favoriteKey(card);
   return `
     <article class="postcard-card new">
       <span class="new-badge">NEW</span>
@@ -437,7 +480,7 @@ function newCard(card) {
       <div>
         <h3>${card.title}</h3>
         <p>${card.meta}</p>
-        <footer><button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${card.id}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button></footer>
+        <footer><button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button></footer>
       </div>
     </article>
   `;
@@ -469,8 +512,8 @@ function searchResults() {
               <p>編號：${card.id}</p>
               <small>${card.meta}　#${(card.tags || []).join(" #")}</small>
             </div>
-            <button type="button" class="favorite-button ${state.favorites.includes(card.id) ? "active" : ""}" data-favorite="${card.id}">
-              ${state.favorites.includes(card.id) ? "♥" : "♡"}
+            <button type="button" class="favorite-button ${isFavorite(card) ? "active" : ""}" data-favorite="${favoriteKey(card)}">
+              ${isFavorite(card) ? "♥" : "♡"}
             </button>
           </article>
         `).join("")}
@@ -613,7 +656,8 @@ function cityRail() {
 }
 
 function catalogCard(card) {
-  const active = state.favorites.includes(card.id);
+  const active = isFavorite(card);
+  const key = favoriteKey(card);
   const tags = (card.tags || []).slice(0, 3);
   const cardNumber = card.legacyNumber || card.id;
   const coordinates = formatCoordinates(card);
@@ -622,8 +666,12 @@ function catalogCard(card) {
     <article class="postcard-card">
       <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
       <div>
-        <small class="postcard-number">編號 ${cardNumber}</small>
-        <h3>${card.title}</h3>
+        <div class="postcard-title-row">
+          <h3>${card.title}</h3>
+          <button type="button" class="favorite-icon-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="${active ? "移除收藏" : "加入收藏"} ${card.title}" title="${active ? "移除收藏" : "收藏"}">
+            <svg class="icon"><use href="#icon-heart"></use></svg>
+          </button>
+        </div>
         ${tags.length ? `<div class="postcard-tags">${tags.map(tag => `<span>#${tag}</span>`).join("")}</div>` : ""}
         <div class="postcard-details">
           <div class="postcard-detail-row">
@@ -632,13 +680,12 @@ function catalogCard(card) {
             ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" aria-label="複製座標" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}
           </div>
           <div class="postcard-detail-row">
-            <span>取得方式</span>
+            <span>取得</span>
             <strong>${obtainLabel}</strong>
           </div>
         </div>
         <footer>
-          <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${card.id}">${active ? "♥" : "♡"} ${card.likes}</button>
-          <span>◎ ${card.views}</span>
+          <span class="postcard-number">編號 ${cardNumber}</span>
         </footer>
       </div>
     </article>
@@ -1033,12 +1080,29 @@ async function handleClick(event) {
   const favorite = event.target.closest("[data-favorite]");
   if (favorite) {
     const id = favorite.dataset.favorite;
-    state.favorites = state.favorites.includes(id)
-      ? state.favorites.filter(item => item !== id)
-      : [...state.favorites, id];
-    localStorage.setItem("postoria-favorites", JSON.stringify(state.favorites));
-    render();
-    showToast(state.favorites.includes(id) ? "已加入收藏" : "已移除收藏");
+    if (!state.token) {
+      showToast("請先登入會員後再收藏");
+      location.hash = "login";
+      return;
+    }
+
+    const isActive = state.favorites.includes(id);
+    favorite.disabled = true;
+    try {
+      await fetchAuthorizedJson(`/api/members/me/favorites/${encodeURIComponent(id)}`, {
+        method: isActive ? "DELETE" : "POST"
+      });
+      state.favorites = isActive
+        ? state.favorites.filter(item => item !== id)
+        : [...state.favorites, id];
+      localStorage.setItem("postoria-favorites", JSON.stringify(state.favorites));
+      render();
+      showToast(isActive ? "已移除收藏" : "已加入收藏");
+    } catch (error) {
+      showToast(error.message || "收藏更新失敗");
+    } finally {
+      favorite.disabled = false;
+    }
     return;
   }
 
@@ -1194,6 +1258,10 @@ function render() {
       requestAnimationFrame(() => document.querySelector(`#${targetId}`)?.scrollIntoView({ block: "start" }));
     }
   }
+}
+
+if (state.token) {
+  loadMemberFavorites();
 }
 
 render();

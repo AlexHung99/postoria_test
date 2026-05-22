@@ -505,6 +505,32 @@ img {
   color: #d95b43;
 }
 
+.favorite-icon-button {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  flex: 0 0 36px;
+  padding: 0;
+  border: 1px solid rgba(0, 106, 112, 0.2);
+  border-radius: 50%;
+  color: var(--teal-dark);
+  background: #fff;
+  cursor: pointer;
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.favorite-icon-button.active {
+  color: #fff;
+  border-color: var(--teal);
+  background: var(--teal);
+}
+
+.favorite-icon-button:disabled {
+  cursor: progress;
+  opacity: 0.65;
+}
+
 .rank,
 .new-badge {
   position: absolute;
@@ -1057,6 +1083,20 @@ img {
   overflow-wrap: anywhere;
 }
 
+.postcard-card .postcard-title-row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 0;
+}
+
+.postcard-card .postcard-title-row h3 {
+  min-width: 0;
+  line-height: 1.35;
+}
+
 .postcard-tags {
   display: flex;
   flex-wrap: wrap;
@@ -1066,11 +1106,15 @@ img {
 
 .postcard-number {
   display: inline-block;
-  margin-bottom: 7px;
   color: var(--teal-dark);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
+}
+
+.catalog-modal .postcard-card footer {
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 
 .postcard-details {
