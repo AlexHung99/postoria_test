@@ -692,12 +692,12 @@ function catalogCard(card) {
   return `
     <article class="postcard-card">
       <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
+      <button type="button" class="favorite-icon-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="${active ? "移除收藏" : "加入收藏"} ${card.title}" title="${active ? "移除收藏" : "收藏"}">
+        <svg class="icon"><use href="#icon-heart"></use></svg>
+      </button>
       <div>
         <div class="postcard-title-row">
           <h3>${card.title}</h3>
-          <button type="button" class="favorite-icon-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="${active ? "移除收藏" : "加入收藏"} ${card.title}" title="${active ? "移除收藏" : "收藏"}">
-            <svg class="icon"><use href="#icon-heart"></use></svg>
-          </button>
         </div>
         ${tags.length ? `<div class="postcard-tags">${tags.map(tag => `<span>#${tag}</span>`).join("")}</div>` : ""}
         <div class="postcard-details">
