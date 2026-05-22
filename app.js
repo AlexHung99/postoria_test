@@ -774,10 +774,16 @@ function externalAuthActions(mode = "login") {
   const label = mode === "register" ? "使用 Google 註冊" : "使用 Google 登入";
   return `
     <div class="auth-divider"><span>或</span></div>
-    <a class="google-auth-button" href="${externalAuthUrl("google")}">
-      <span class="google-mark" aria-hidden="true">G</span>
-      ${label}
-    </a>
+    <div class="social-auth-row">
+      <a class="google-auth-circle" href="${externalAuthUrl("google")}" aria-label="${label}" title="${label}">
+        <svg class="google-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path fill="#4285F4" d="M21.8 12.2c0-.7-.1-1.3-.2-1.9H12v3.6h5.5a4.7 4.7 0 0 1-2 3.1v2.6h3.2c1.9-1.8 3.1-4.3 3.1-7.4Z"></path>
+          <path fill="#34A853" d="M12 22c2.7 0 5-0.9 6.7-2.4L15.5 17c-.9.6-2 .9-3.5.9-2.7 0-4.9-1.8-5.7-4.2H3v2.6A10 10 0 0 0 12 22Z"></path>
+          <path fill="#FBBC05" d="M6.3 13.7a6 6 0 0 1 0-3.4V7.7H3a10 10 0 0 0 0 8.6l3.3-2.6Z"></path>
+          <path fill="#EA4335" d="M12 6.1c1.5 0 2.8.5 3.8 1.5l2.9-2.9A9.7 9.7 0 0 0 12 2a10 10 0 0 0-9 5.7l3.3 2.6C7.1 7.9 9.3 6.1 12 6.1Z"></path>
+        </svg>
+      </a>
+    </div>
   `;
 }
 

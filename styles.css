@@ -1437,37 +1437,32 @@ img {
   background: var(--line);
 }
 
-.google-auth-button {
+.social-auth-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  min-height: 56px;
+}
+
+.google-auth-circle {
+  display: inline-grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
   border: 1px solid #cfd9dc;
-  border-radius: 999px;
-  color: #203b47;
+  border-radius: 50%;
   background: #fff;
-  font-weight: 900;
   box-shadow: 0 8px 20px rgba(15, 48, 60, 0.06);
 }
 
-.google-auth-button:hover,
-.google-auth-button:focus-visible {
+.google-auth-circle:hover,
+.google-auth-circle:focus-visible {
   border-color: var(--teal);
   outline: 0;
 }
 
-.google-mark {
-  display: inline-grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border: 1px solid #e2e7ea;
-  border-radius: 50%;
-  color: #4285f4;
-  background: #fff;
-  font-size: 18px;
-  font-weight: 900;
+.google-logo {
+  width: 28px;
+  height: 28px;
 }
 
 .notice {
