@@ -153,6 +153,12 @@ img {
   gap: 10px;
 }
 
+.header-auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .ghost-button,
 .solid-button,
 .gold-button,
@@ -172,6 +178,26 @@ img {
 .ghost-button {
   border: 1px solid #9fb0b8;
   background: #fff;
+}
+
+.member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  max-width: 230px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--teal-dark);
+  background: #fff;
+  font-weight: 900;
+}
+
+.member-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .solid-button,
@@ -1253,6 +1279,23 @@ img {
 
 .mobile-menu nav .icon {
   color: var(--teal);
+}
+
+.mobile-auth-actions {
+  display: grid;
+  gap: 0;
+}
+
+.mobile-logout {
+  width: 100%;
+  padding: 16px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--teal-dark);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 800;
+  text-align: left;
 }
 
 .bottom-nav {

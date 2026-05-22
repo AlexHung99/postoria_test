@@ -7,6 +7,8 @@ const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
 const mobileMenu = document.querySelector("[data-mobile-menu]");
 const searchLightbox = document.querySelector("[data-search-lightbox]");
+const headerAuthActions = document.querySelector("[data-header-auth]");
+const mobileAuthActions = document.querySelector("[data-mobile-auth]");
 const homeAnchors = new Set(["explore", "popular", "latest"]);
 let pendingAnchorScroll = homeAnchors.has(getRoute()) ? getRoute() : "";
 
@@ -135,6 +137,16 @@ function setSession(member, token, expiresAt) {
   localStorage.setItem("postoria-member", JSON.stringify(member));
   localStorage.setItem("postoria-token", token);
   localStorage.setItem("postoria-token-expires-at", expiresAt || "");
+  renderAuthActions();
+}
+
+function clearSession() {
+  state.member = null;
+  state.token = "";
+  localStorage.removeItem("postoria-member");
+  localStorage.removeItem("postoria-token");
+  localStorage.removeItem("postoria-token-expires-at");
+  renderAuthActions();
 }
 
 async function loadHomeData() {
@@ -653,6 +665,10 @@ function escapeAttr(value) {
   return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function imageFallbackAttr() {
   return `loading="lazy" decoding="async" onerror="this.onerror=null;this.src='assets/hero-sunset.jpg';"`;
 }
@@ -672,6 +688,37 @@ function siteFooter() {
       <p>© 2026 Postoria. All rights reserved.</p>
     </footer>
   `;
+}
+
+function memberName() {
+  return state.member?.displayName || state.member?.email || "Postorian";
+}
+
+function renderAuthActions() {
+  const signedIn = Boolean(state.member);
+  const name = escapeHtml(memberName());
+  if (headerAuthActions) {
+    headerAuthActions.innerHTML = signedIn ? `
+      <a class="member-chip" href="#login-success" title="${escapeAttr(memberName())}">
+        <svg class="icon"><use href="#icon-user-round"></use></svg>
+        <span>你好，${name}</span>
+      </a>
+      <button class="ghost-button" type="button" data-action="logout">登出</button>
+    ` : `
+      <a class="ghost-button" href="#login">登入</a>
+      <a class="solid-button" href="#register">註冊會員</a>
+    `;
+  }
+
+  if (mobileAuthActions) {
+    mobileAuthActions.innerHTML = signedIn ? `
+      <a href="#login-success"><svg class="icon"><use href="#icon-user-round"></use></svg>你好，${name}</a>
+      <button class="mobile-logout" type="button" data-action="logout">登出</button>
+    ` : `
+      <a href="#login"><svg class="icon"><use href="#icon-user-round"></use></svg>登入</a>
+      <a class="solid-button" href="#register">註冊會員</a>
+    `;
+  }
 }
 
 function logo() {
@@ -1033,6 +1080,17 @@ async function handleClick(event) {
     return;
   }
 
+  if (action?.dataset.action === "logout") {
+    clearSession();
+    closeCatalogModal();
+    mobileMenu.classList.remove("open");
+    mobileMenu.setAttribute("aria-hidden", "true");
+    showToast("已登出");
+    location.hash = "home";
+    render();
+    return;
+  }
+
   if (action?.dataset.action === "need-login") {
     showToast(`${action.dataset.label}需登入會員後使用`);
     location.hash = "login";
@@ -1112,6 +1170,7 @@ function render() {
   if (route === "login-success") {
     consumeExternalAuthResult();
   }
+  renderAuthActions();
   document.body.classList.toggle("catalog-modal-open", false);
   if (route !== "forgot") {
     sessionStorage.removeItem("postoria-reset-sent");
