@@ -701,7 +701,7 @@ function renderAuthActions() {
     headerAuthActions.innerHTML = signedIn ? `
       <a class="member-chip" href="#login-success" title="${escapeAttr(memberName())}">
         <svg class="icon"><use href="#icon-user-round"></use></svg>
-        <span>你好，${name}</span>
+        <span>${name}</span>
       </a>
       <button class="ghost-button" type="button" data-action="logout">登出</button>
     ` : `
@@ -712,7 +712,7 @@ function renderAuthActions() {
 
   if (mobileAuthActions) {
     mobileAuthActions.innerHTML = signedIn ? `
-      <a href="#login-success"><svg class="icon"><use href="#icon-user-round"></use></svg>你好，${name}</a>
+      <a href="#login-success"><svg class="icon"><use href="#icon-user-round"></use></svg>${name}</a>
       <button class="mobile-logout" type="button" data-action="logout">登出</button>
     ` : `
       <a href="#login"><svg class="icon"><use href="#icon-user-round"></use></svg>登入</a>
