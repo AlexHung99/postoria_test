@@ -505,6 +505,20 @@ img {
   color: #d95b43;
 }
 
+.favorite-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #2a4552;
+  font-weight: 800;
+}
+
+.favorite-count .icon {
+  width: 17px;
+  height: 17px;
+  color: var(--teal-dark);
+}
+
 .favorite-icon-button {
   display: inline-grid;
   width: 36px;
@@ -1112,11 +1126,6 @@ img {
   letter-spacing: 0;
 }
 
-.catalog-modal .postcard-card footer {
-  justify-content: flex-end;
-  margin-top: 10px;
-}
-
 .postcard-details {
   display: grid;
   gap: 8px;
@@ -1148,6 +1157,21 @@ img {
   font-weight: 900;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.postcard-detail-row .obtain-method {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  justify-self: start;
+  overflow: visible;
+  color: var(--teal-dark);
+}
+
+.postcard-detail-row .obtain-method .icon {
+  width: 22px;
+  height: 22px;
 }
 
 .copy-coordinate-button {

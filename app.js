@@ -322,6 +322,23 @@ function isFavorite(card) {
   return state.favorites.includes(favoriteKey(card));
 }
 
+function syncFavoriteButtons(id, isActive) {
+  document.querySelectorAll(`[data-favorite="${CSS.escape(id)}"]`).forEach(button => {
+    button.classList.toggle("active", isActive);
+    const label = isActive ? "移除收藏" : "加入收藏";
+    if (button.classList.contains("favorite-icon-button")) {
+      button.title = isActive ? "移除收藏" : "收藏";
+      button.setAttribute("aria-label", label);
+      return;
+    }
+
+    const text = button.textContent.trim();
+    if (text) {
+      button.textContent = text.replace(/^[♥♡]/, isActive ? "♥" : "♡");
+    }
+  });
+}
+
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
@@ -661,7 +678,7 @@ function catalogCard(card) {
   const tags = (card.tags || []).slice(0, 3);
   const cardNumber = card.legacyNumber || card.id;
   const coordinates = formatCoordinates(card);
-  const obtainLabel = postcardTypeLabel(card.postcardType);
+  const obtain = postcardTypePresentation(card.postcardType);
   return `
     <article class="postcard-card">
       <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
@@ -681,10 +698,13 @@ function catalogCard(card) {
           </div>
           <div class="postcard-detail-row">
             <span>取得</span>
-            <strong>${obtainLabel}</strong>
+            <strong class="obtain-method" title="${obtain.label}" aria-label="${obtain.label}">
+              <svg class="icon"><use href="#${obtain.icon}"></use></svg>
+            </strong>
           </div>
         </div>
         <footer>
+          <span class="favorite-count"><svg class="icon"><use href="#icon-heart"></use></svg>${card.likes}</span>
           <span class="postcard-number">編號 ${cardNumber}</span>
         </footer>
       </div>
@@ -699,13 +719,13 @@ function formatCoordinates(card) {
   return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 }
 
-function postcardTypeLabel(type) {
+function postcardTypePresentation(type) {
   const labels = {
-    MUSHROOM: "打菇",
-    FLOWER: "花",
-    EXPLORATION: "探索"
+    MUSHROOM: { label: "打菇", icon: "icon-mushroom" },
+    FLOWER: { label: "花", icon: "icon-flower" },
+    EXPLORATION: { label: "探索", icon: "icon-search" }
   };
-  return labels[String(type || "").toUpperCase()] || "未提供";
+  return labels[String(type || "").toUpperCase()] || { label: "未提供", icon: "icon-search" };
 }
 
 function escapeAttr(value) {
@@ -1096,7 +1116,7 @@ async function handleClick(event) {
         ? state.favorites.filter(item => item !== id)
         : [...state.favorites, id];
       localStorage.setItem("postoria-favorites", JSON.stringify(state.favorites));
-      render();
+      syncFavoriteButtons(id, !isActive);
       showToast(isActive ? "已移除收藏" : "已加入收藏");
     } catch (error) {
       showToast(error.message || "收藏更新失敗");
