@@ -227,6 +227,7 @@ async function openCatalog(next = {}) {
     state.catalog.showPostcards &&
     showPostcards
   );
+  const patchModal = preserveViewport && Boolean(document.querySelector(".catalog-modal"));
   const viewportSnapshot = preserveViewport ? getCatalogViewportSnapshot() : null;
   state.catalog = {
     ...state.catalog,
@@ -237,7 +238,9 @@ async function openCatalog(next = {}) {
     showPostcards,
     page: next.page || 1
   };
-  if (!isCountryBrowse) {
+  if (patchModal && next.city) {
+    setCatalogCityActive(next.city);
+  } else if (!isCountryBrowse) {
     render();
     restoreCatalogViewport(viewportSnapshot);
   }
@@ -278,8 +281,13 @@ async function openCatalog(next = {}) {
     };
   }
 
-  render();
-  restoreCatalogViewport(viewportSnapshot);
+  if (patchModal) {
+    updateCatalogModalInPlace();
+    restoreCatalogViewport(viewportSnapshot);
+  } else {
+    render();
+    restoreCatalogViewport(viewportSnapshot);
+  }
   if (!(state.catalog.country && state.catalog.city && state.catalog.showPostcards)) {
     requestAnimationFrame(() => {
       const target = state.catalog.country && !state.catalog.city && !state.catalog.showPostcards
@@ -315,6 +323,73 @@ function restoreCatalogViewport(snapshot) {
       cityList.scrollLeft = snapshot.cityListLeft;
     }
   });
+}
+
+function setCatalogCityActive(cityName) {
+  document.querySelectorAll(".catalog-city-list [data-city]").forEach(button => {
+    button.classList.toggle("active", button.dataset.city === cityName);
+  });
+}
+
+function updateCatalogModalInPlace() {
+  const modal = document.querySelector(".catalog-modal");
+  if (!modal) {
+    render();
+    return;
+  }
+
+  const activeCity = state.catalog.cities.find(city => city.name === state.catalog.city) || {};
+  const cityImage = activeCity.imageUrl || state.catalog.items[0]?.image || "assets/hero-sunset.jpg";
+  setCatalogCityActive(state.catalog.city);
+
+  const placeImage = modal.querySelector(".catalog-place img");
+  const placeTitle = modal.querySelector(".catalog-place h2");
+  const placeCountry = modal.querySelector(".catalog-place p");
+  const summary = modal.querySelector(".catalog-summary span");
+  const grid = modal.querySelector(".catalog-grid");
+  const main = modal.querySelector(".catalog-main");
+
+  if (placeImage) {
+    placeImage.src = cityImage;
+    placeImage.alt = state.catalog.city;
+  }
+  if (placeTitle) placeTitle.textContent = state.catalog.city;
+  if (placeCountry) placeCountry.textContent = state.catalog.country;
+  if (summary) {
+    summary.textContent = state.catalog.loading
+      ? "讀取中..."
+      : `共 ${state.catalog.total.toLocaleString()} 張明信片`;
+  }
+  if (grid) {
+    grid.innerHTML = state.catalog.items.map(catalogCard).join("");
+  }
+
+  main?.querySelectorAll(":scope > .api-note, :scope > .pagination, [data-catalog-dynamic]").forEach(element => element.remove());
+  if (main && state.catalog.error) {
+    const note = document.createElement("p");
+    note.className = "api-note";
+    note.dataset.catalogDynamic = "true";
+    note.textContent = state.catalog.error;
+    grid?.before(note);
+  }
+  if (main && !state.catalog.loading && !state.catalog.items.length) {
+    const empty = document.createElement("p");
+    empty.className = "api-note";
+    empty.dataset.catalogDynamic = "true";
+    empty.textContent = "目前沒有符合條件的明信片。";
+    grid?.after(empty);
+  }
+  if (main && state.catalog.totalPages > 1) {
+    const pagination = document.createElement("div");
+    pagination.className = "pagination";
+    pagination.dataset.catalogDynamic = "true";
+    pagination.innerHTML = `
+      <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>‹</button>
+      <span>${state.catalog.page} / ${state.catalog.totalPages}</span>
+      <button type="button" data-page="${Math.min(state.catalog.totalPages, state.catalog.page + 1)}" ${state.catalog.page >= state.catalog.totalPages ? "disabled" : ""}>›</button>
+    `;
+    grid?.after(pagination);
+  }
 }
 
 async function fetchJson(path) {
