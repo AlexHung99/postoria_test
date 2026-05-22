@@ -322,7 +322,7 @@ function isFavorite(card) {
   return state.favorites.includes(favoriteKey(card));
 }
 
-function syncFavoriteButtons(id, isActive) {
+function syncFavoriteButtons(id, isActive, favoriteCount = null) {
   document.querySelectorAll(`[data-favorite="${CSS.escape(id)}"]`).forEach(button => {
     button.classList.toggle("active", isActive);
     const label = isActive ? "移除收藏" : "加入收藏";
@@ -337,6 +337,16 @@ function syncFavoriteButtons(id, isActive) {
       button.textContent = text.replace(/^[♥♡]/, isActive ? "♥" : "♡");
     }
   });
+
+  if (favoriteCount !== null && favoriteCount !== undefined) {
+    document.querySelectorAll(`[data-favorite-count="${CSS.escape(id)}"]`).forEach(element => {
+      const icon = element.querySelector(".icon");
+      element.textContent = Number(favoriteCount).toLocaleString();
+      if (icon) {
+        element.prepend(icon);
+      }
+    });
+  }
 }
 
 function showToast(message) {
@@ -702,7 +712,7 @@ function catalogCard(card) {
           </div>
         </div>
         <footer>
-          <span class="favorite-count"><svg class="icon"><use href="#icon-heart"></use></svg>${card.likes}</span>
+          <span class="favorite-count" data-favorite-count="${key}"><svg class="icon"><use href="#icon-heart"></use></svg>${card.likes}</span>
           <span class="postcard-number">編號 ${cardNumber}</span>
         </footer>
       </div>
@@ -1107,14 +1117,14 @@ async function handleClick(event) {
     const isActive = state.favorites.includes(id);
     favorite.disabled = true;
     try {
-      await fetchAuthorizedJson(`/api/members/me/favorites/${encodeURIComponent(id)}`, {
+      const result = await fetchAuthorizedJson(`/api/members/me/favorites/${encodeURIComponent(id)}`, {
         method: isActive ? "DELETE" : "POST"
       });
       state.favorites = isActive
         ? state.favorites.filter(item => item !== id)
         : [...state.favorites, id];
       localStorage.setItem("postoria-favorites", JSON.stringify(state.favorites));
-      syncFavoriteButtons(id, !isActive);
+      syncFavoriteButtons(id, !isActive, result.favoriteCount);
       showToast(isActive ? "已移除收藏" : "已加入收藏");
     } catch (error) {
       showToast(error.message || "收藏更新失敗");
