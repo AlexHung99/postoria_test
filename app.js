@@ -678,7 +678,7 @@ function catalogCard(card) {
   const tags = (card.tags || []).slice(0, 3);
   const cardNumber = card.legacyNumber || card.id;
   const coordinates = formatCoordinates(card);
-  const obtain = postcardTypePresentation(card.postcardType);
+  const obtainLabel = postcardTypeLabel(card.postcardType);
   return `
     <article class="postcard-card">
       <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
@@ -698,9 +698,7 @@ function catalogCard(card) {
           </div>
           <div class="postcard-detail-row">
             <span>取得</span>
-            <strong class="obtain-method" title="${obtain.label}" aria-label="${obtain.label}">
-              <svg class="icon"><use href="#${obtain.icon}"></use></svg>
-            </strong>
+            <strong>${obtainLabel}</strong>
           </div>
         </div>
         <footer>
@@ -719,13 +717,13 @@ function formatCoordinates(card) {
   return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 }
 
-function postcardTypePresentation(type) {
+function postcardTypeLabel(type) {
   const labels = {
-    MUSHROOM: { label: "打菇", icon: "icon-mushroom" },
-    FLOWER: { label: "花", icon: "icon-flower" },
-    EXPLORATION: { label: "探索", icon: "icon-search" }
+    MUSHROOM: "打菇",
+    FLOWER: "花",
+    EXPLORATION: "探索"
   };
-  return labels[String(type || "").toUpperCase()] || { label: "未提供", icon: "icon-search" };
+  return labels[String(type || "").toUpperCase()] || "未提供";
 }
 
 function escapeAttr(value) {

@@ -509,8 +509,10 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  flex: 0 0 auto;
   color: #2a4552;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .favorite-count .icon {
@@ -1157,21 +1159,6 @@ img {
   font-weight: 900;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.postcard-detail-row .obtain-method {
-  display: inline-grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  justify-self: start;
-  overflow: visible;
-  color: var(--teal-dark);
-}
-
-.postcard-detail-row .obtain-method .icon {
-  width: 22px;
-  height: 22px;
 }
 
 .copy-coordinate-button {
