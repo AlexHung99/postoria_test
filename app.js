@@ -29,6 +29,8 @@ const state = {
     sort: "latest",
     page: 1,
     pageSize: 12,
+    limitTop: false,
+    title: "",
     cities: [],
     items: [],
     total: 0,
@@ -659,6 +661,21 @@ function heroMarkup(slides = (state.home?.banners || heroSlides)) {
   `;
 }
 
+function openPopularCatalog() {
+  state.search = "";
+  openCatalog({
+    country: "",
+    city: "",
+    keyword: "",
+    sort: "popular",
+    page: 1,
+    pageSize: 50,
+    limitTop: true,
+    title: "熱門收藏 TOP 50",
+    showPostcards: true
+  });
+}
+
 function renderHeroOnly() {
   const hero = document.querySelector("#hero");
   if (hero) hero.innerHTML = heroMarkup();
@@ -752,27 +769,30 @@ function catalogPanel() {
 
   const title = state.catalog.keyword
     ? `搜尋：${state.catalog.keyword}`
-    : state.catalog.city
+    : state.catalog.title || (state.catalog.city
       ? `${state.catalog.country}・${state.catalog.city}`
-      : state.catalog.country || "全部明信片";
+      : state.catalog.country || "全部明信片");
+  const summary = state.catalog.limitTop
+    ? `前 ${state.catalog.items.length.toLocaleString()} 名明信片`
+    : state.catalog.loading ? "讀取中..." : `共 ${state.catalog.total.toLocaleString()} 張明信片`;
 
   return `
     <section class="section-block catalog-panel" id="catalog">
       <div class="section-heading">
         <div>
           <h2><span>▦</span>${title}</h2>
-          <p>${state.catalog.loading ? "讀取中..." : `共 ${state.catalog.total.toLocaleString()} 張明信片`}</p>
+          <p>${summary}</p>
         </div>
-        <div class="catalog-tools">
+        ${state.catalog.limitTop ? "" : `<div class="catalog-tools">
           <button class="link-button ${state.catalog.sort === "latest" ? "active" : ""}" type="button" data-sort="latest">最新</button>
           <button class="link-button ${state.catalog.sort === "popular" ? "active" : ""}" type="button" data-sort="popular">熱門</button>
-        </div>
+        </div>`}
       </div>
       ${state.catalog.error ? `<p class="api-note">${state.catalog.error}</p>` : ""}
       <div class="catalog-grid">
-        ${state.catalog.loading ? catalogSkeletonCards(state.catalog.pageSize || 6) : state.catalog.items.map(catalogCard).join("")}
+        ${state.catalog.loading ? catalogSkeletonCards(Math.min(state.catalog.pageSize || 6, 12)) : state.catalog.items.map(catalogCard).join("")}
       </div>
-      ${state.catalog.totalPages > 1 ? `
+      ${!state.catalog.limitTop && state.catalog.totalPages > 1 ? `
         <div class="pagination">
           <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>‹</button>
           <span>${state.catalog.page} / ${state.catalog.totalPages}</span>
@@ -956,7 +976,7 @@ function siteFooter() {
       </div>
       <nav>
         <a href="#explore">探索世界</a>
-        <a href="#popular">熱門收藏</a>
+        <a href="#popular" data-scroll="popular">熱門收藏</a>
         <a href="#latest">我的收藏</a>
         <a href="#login">會員專區</a>
       </nav>
@@ -1162,9 +1182,9 @@ async function handleSubmit(event) {
     }
     state.search = keyword.replace(/^#/, "");
     if (searchForm.dataset.searchScope === "catalog") {
-      openCatalog({ keyword: state.search, page: 1, showPostcards: true });
+      openCatalog({ keyword: state.search, page: 1, pageSize: 12, limitTop: false, title: "", showPostcards: true });
     } else {
-      openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, showPostcards: true });
+      openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, pageSize: 12, limitTop: false, title: "", showPostcards: true });
     }
     closeSearchLightbox();
     showToast(`已搜尋「${keyword}」`);
@@ -1270,6 +1290,14 @@ async function handleClick(event) {
 
   const scrollLink = event.target.closest("[data-scroll]");
   if (scrollLink) {
+    if (scrollLink.dataset.scroll === "popular") {
+      event.preventDefault();
+      openPopularCatalog();
+      mobileMenu.classList.remove("open");
+      mobileMenu.setAttribute("aria-hidden", "true");
+      return;
+    }
+
     const target = document.querySelector(`#${scrollLink.dataset.scroll}`);
     if (target) {
       event.preventDefault();
@@ -1284,13 +1312,13 @@ async function handleClick(event) {
   const keyword = event.target.closest("[data-keyword]");
   if (keyword) {
     state.search = keyword.dataset.keyword;
-    openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, showPostcards: true });
+    openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, pageSize: 12, limitTop: false, title: "", showPostcards: true });
     return;
   }
 
   const country = event.target.closest("[data-country]");
   if (country) {
-    openCatalog({ country: country.dataset.country, city: "", keyword: "", sort: "latest", page: 1, showPostcards: false });
+    openCatalog({ country: country.dataset.country, city: "", keyword: "", sort: "latest", page: 1, pageSize: 12, limitTop: false, title: "", showPostcards: false });
     return;
   }
 
@@ -1304,6 +1332,9 @@ async function handleClick(event) {
       city: city.dataset.city,
       keyword: "",
       page: 1,
+      pageSize: 12,
+      limitTop: false,
+      title: "",
       showPostcards
     });
     return;
@@ -1311,7 +1342,7 @@ async function handleClick(event) {
 
   const sort = event.target.closest("[data-sort]");
   if (sort) {
-    openCatalog({ sort: sort.dataset.sort, page: 1 });
+    openCatalog({ sort: sort.dataset.sort, page: 1, pageSize: 12, limitTop: false, title: "" });
     return;
   }
 
@@ -1377,6 +1408,9 @@ async function handleClick(event) {
       keyword: "",
       sort: action.dataset.viewSort || "latest",
       page: 1,
+      pageSize: 12,
+      limitTop: false,
+      title: "",
       showPostcards: true
     });
     return;
@@ -1483,6 +1517,9 @@ function resetHomeState() {
     keyword: "",
     sort: "latest",
     page: 1,
+    pageSize: 12,
+    limitTop: false,
+    title: "",
     showPostcards: false,
     items: [],
     total: 0,
