@@ -1289,15 +1289,21 @@ function uploadCard() {
           ${field({ icon: "icon-search", name: "longitude", type: "number", placeholder: "經度，例如 121.5654", required: false })}
         </div>
         ${field({ icon: "icon-heart", name: "tags", placeholder: "標籤，可用逗號或 # 分隔", required: false })}
-        <label class="field select-field">
-          <svg class="field-icon"><use href="#icon-briefcase"></use></svg>
-          <select name="postcardType" aria-label="取得方式">
-            <option value="">取得方式</option>
-            <option value="mushroom">打菇</option>
-            <option value="flower">花</option>
-            <option value="explore">探索</option>
-          </select>
-        </label>
+        <fieldset class="segmented-field">
+          <legend>取得方式</legend>
+          <label>
+            <input type="radio" name="postcardType" value="mushroom">
+            <span>打菇</span>
+          </label>
+          <label>
+            <input type="radio" name="postcardType" value="flower">
+            <span>花</span>
+          </label>
+          <label>
+            <input type="radio" name="postcardType" value="explore">
+            <span>探索</span>
+          </label>
+        </fieldset>
         <button class="primary-button" type="submit">送出審核</button>
         <p class="status"></p>
       </form>
