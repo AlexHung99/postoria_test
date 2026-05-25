@@ -1608,10 +1608,10 @@ img {
 }
 
 .segmented-field input:checked + span {
-  color: #fff;
-  border-color: var(--teal);
-  background: var(--teal);
-  box-shadow: 0 8px 18px rgba(0, 106, 112, 0.18);
+  color: var(--teal-dark);
+  border-color: rgba(0, 106, 112, 0.28);
+  background: #e8f6f8;
+  box-shadow: 0 6px 14px rgba(0, 106, 112, 0.08);
 }
 
 .segmented-field input:focus-visible + span {

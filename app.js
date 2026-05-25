@@ -1296,7 +1296,7 @@ function uploadCard() {
             <span>打菇</span>
           </label>
           <label>
-            <input type="radio" name="postcardType" value="flower">
+            <input type="radio" name="postcardType" value="flower" checked>
             <span>花</span>
           </label>
           <label>
