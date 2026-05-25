@@ -1052,7 +1052,6 @@ function siteFooter() {
         <img class="brand-logo footer-logo" src="assets/logo-header.png" alt="Postoria" ${logoImageAttr()}>
       </div>
       <nav>
-        <a href="#explore" data-scroll="explore">探索世界</a>
         <a href="#popular" data-scroll="popular">熱門收藏</a>
         <a href="#latest" data-scroll="latest">我的收藏</a>
         <a href="#login">會員專區</a>
