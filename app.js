@@ -9,7 +9,7 @@ const mobileMenu = document.querySelector("[data-mobile-menu]");
 const searchLightbox = document.querySelector("[data-search-lightbox]");
 const headerAuthActions = document.querySelector("[data-header-auth]");
 const mobileAuthActions = document.querySelector("[data-mobile-auth]");
-const homeAnchors = new Set(["explore", "popular", "latest"]);
+const homeAnchors = new Set(["explore"]);
 let pendingAnchorScroll = homeAnchors.has(getRoute()) ? getRoute() : "";
 
 const state = {
@@ -102,6 +102,11 @@ const latest = [
   { id: "IS-0012", title: "Iceland Aurora", meta: "冰島", image: "assets/norway.jpg", likes: "64", tags: ["冰島", "極光"] }
 ];
 
+function closeMobileMenu() {
+  mobileMenu.classList.remove("open");
+  mobileMenu.setAttribute("aria-hidden", "true");
+}
+
 window.addEventListener("hashchange", handleRouteChange);
 window.addEventListener("popstate", handleRouteChange);
 document.addEventListener("submit", handleSubmit);
@@ -114,7 +119,15 @@ document.addEventListener("keydown", event => {
 
 function handleRouteChange() {
   const route = getRoute();
-  pendingAnchorScroll = homeAnchors.has(route) ? route : "";
+  if (route === "popular") {
+    openPopularCatalog();
+    return;
+  }
+  if (route === "latest") {
+    openFavoriteCatalog();
+    return;
+  }
+  pendingAnchorScroll = route === "explore" ? route : "";
   render();
 }
 
@@ -1026,7 +1039,7 @@ function siteFooter() {
         <img class="brand-logo footer-logo" src="assets/logo-header.png" alt="Postoria" ${logoImageAttr()}>
       </div>
       <nav>
-        <a href="#explore">探索世界</a>
+        <a href="#explore" data-scroll="explore">探索世界</a>
         <a href="#popular" data-scroll="popular">熱門收藏</a>
         <a href="#latest" data-scroll="latest">我的收藏</a>
         <a href="#login">會員專區</a>
@@ -1289,13 +1302,12 @@ async function handleSubmit(event) {
 }
 
 async function handleClick(event) {
-  const homeBrand = event.target.closest(".site-header .brand, .mobile-brand");
+  const homeBrand = event.target.closest(".site-header .brand, .mobile-brand, .bottom-nav a[href='#home']");
   if (homeBrand) {
     event.preventDefault();
     resetHomeState();
     history.pushState(null, "", "#home");
-    mobileMenu.classList.remove("open");
-    mobileMenu.setAttribute("aria-hidden", "true");
+    closeMobileMenu();
     render();
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
     return;
@@ -1343,17 +1355,29 @@ async function handleClick(event) {
   if (scrollLink) {
     if (scrollLink.dataset.scroll === "popular") {
       event.preventDefault();
+      history.pushState(null, "", "#popular");
       openPopularCatalog();
-      mobileMenu.classList.remove("open");
-      mobileMenu.setAttribute("aria-hidden", "true");
+      closeMobileMenu();
       return;
     }
 
     if (scrollLink.dataset.scroll === "latest") {
       event.preventDefault();
+      history.pushState(null, "", "#latest");
       openFavoriteCatalog();
-      mobileMenu.classList.remove("open");
-      mobileMenu.setAttribute("aria-hidden", "true");
+      closeMobileMenu();
+      return;
+    }
+
+    if (scrollLink.dataset.scroll === "explore") {
+      event.preventDefault();
+      resetHomeState();
+      history.pushState(null, "", "#explore");
+      closeMobileMenu();
+      render();
+      requestAnimationFrame(() => {
+        document.querySelector("#explore")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
       return;
     }
 
@@ -1362,8 +1386,7 @@ async function handleClick(event) {
       event.preventDefault();
       history.pushState(null, "", `#${scrollLink.dataset.scroll}`);
       target.scrollIntoView({ behavior: "smooth", block: "start" });
-      mobileMenu.classList.remove("open");
-      mobileMenu.setAttribute("aria-hidden", "true");
+      closeMobileMenu();
       return;
     }
   }
@@ -1625,4 +1648,11 @@ if (state.token) {
   loadMemberFavorites();
 }
 
-render();
+const initialRoute = getRoute();
+if (initialRoute === "popular") {
+  openPopularCatalog();
+} else if (initialRoute === "latest") {
+  openFavoriteCatalog();
+} else {
+  render();
+}
