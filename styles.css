@@ -200,6 +200,16 @@ img {
   white-space: nowrap;
 }
 
+.upload-nav-button {
+  gap: 8px;
+  padding-inline: 16px;
+}
+
+.upload-nav-button .icon {
+  width: 20px;
+  height: 20px;
+}
+
 .solid-button,
 .primary-button {
   border: 0;
@@ -1540,6 +1550,66 @@ img {
   background: transparent;
 }
 
+.field select {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  background: transparent;
+}
+
+.upload-card {
+  width: min(100%, 720px);
+  justify-self: end;
+}
+
+.upload-form {
+  gap: 16px;
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.file-field {
+  position: relative;
+  min-height: 76px;
+  cursor: pointer;
+}
+
+.file-field span {
+  color: #405a66;
+  font-weight: 800;
+}
+
+.file-field input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-note {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(0, 106, 112, 0.18);
+  border-radius: 16px;
+  background: #f6fbfa;
+}
+
+.upload-note strong {
+  color: var(--teal-dark);
+}
+
+.upload-note p {
+  margin: 6px 0 0;
+  color: #405a66;
+  line-height: 1.7;
+}
+
 .toggle-password {
   display: inline-grid;
   place-items: center;
@@ -1981,6 +2051,14 @@ img {
   .home-shell,
   .auth-layout {
     width: min(100% - 28px, 430px);
+  }
+
+  .upload-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .upload-card {
+    width: 100%;
   }
 
   .hero {

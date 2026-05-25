@@ -18,6 +18,7 @@ const state = {
   slide: 0,
   search: "",
   favorites: readJson("postoria-favorites") || [],
+  uploads: [],
   home: null,
   homeLoading: false,
   homeError: "",
@@ -111,11 +112,22 @@ window.addEventListener("hashchange", handleRouteChange);
 window.addEventListener("popstate", handleRouteChange);
 document.addEventListener("submit", handleSubmit);
 document.addEventListener("click", handleClick);
+document.addEventListener("change", handleChange);
 document.addEventListener("keydown", event => {
   if (event.key !== "Escape") return;
   closeSearchLightbox();
   closeCatalogModal();
 });
+
+function handleChange(event) {
+  const input = event.target.closest("input[type='file'][name='image']");
+  if (!input) return;
+
+  const label = input.closest(".file-field")?.querySelector("[data-file-label]");
+  if (label) {
+    label.textContent = input.files?.[0]?.name || "選擇圖片 JPG / PNG / WebP，8MB 以內";
+  }
+}
 
 function handleRouteChange() {
   const route = getRoute();
@@ -160,6 +172,7 @@ function clearSession() {
   state.member = null;
   state.token = "";
   state.favorites = [];
+  state.uploads = [];
   localStorage.removeItem("postoria-member");
   localStorage.removeItem("postoria-token");
   localStorage.removeItem("postoria-token-expires-at");
@@ -1058,6 +1071,10 @@ function renderAuthActions() {
   const name = escapeHtml(memberName());
   if (headerAuthActions) {
     headerAuthActions.innerHTML = signedIn ? `
+      <a class="solid-button upload-nav-button" href="#upload">
+        <svg class="icon"><use href="#icon-upload"></use></svg>
+        <span>上傳明信片</span>
+      </a>
       <a class="member-chip" href="#login-success" title="${escapeAttr(memberName())}">
         <svg class="icon"><use href="#icon-user-round"></use></svg>
         <span>${name}</span>
@@ -1071,6 +1088,7 @@ function renderAuthActions() {
 
   if (mobileAuthActions) {
     mobileAuthActions.innerHTML = signedIn ? `
+      <a href="#upload"><svg class="icon"><use href="#icon-upload"></use></svg>上傳明信片</a>
       <a href="#login-success"><svg class="icon"><use href="#icon-user-round"></use></svg>${name}</a>
       <button class="mobile-logout" type="button" data-action="logout">登出</button>
     ` : `
@@ -1088,10 +1106,11 @@ function logo() {
 
 function field({ icon, name, type = "text", placeholder, autocomplete = "", required = true }) {
   const password = type === "password";
+  const numberAttrs = type === "number" ? `step="any" inputmode="decimal"` : "";
   return `
     <label class="field">
       <svg class="icon field-icon" aria-hidden="true"><use href="#${icon}"></use></svg>
-      <input name="${name}" type="${type}" placeholder="${placeholder}" ${autocomplete ? `autocomplete="${autocomplete}"` : ""} ${required ? "required" : ""}>
+      <input name="${name}" type="${type}" placeholder="${placeholder}" ${numberAttrs} ${autocomplete ? `autocomplete="${autocomplete}"` : ""} ${required ? "required" : ""}>
       ${password ? `<button class="toggle-password" type="button" aria-label="顯示或隱藏密碼"><svg class="icon"><use href="#icon-eye"></use></svg></button>` : ""}
     </label>
   `;
@@ -1235,6 +1254,62 @@ function renderLoginSuccess() {
   `, true);
 }
 
+function uploadCard() {
+  if (!state.token) {
+    return authShell(`
+      <article class="success-card">
+        <span class="success-mark" aria-hidden="true">!</span>
+        <div>
+          <h2>請先登入</h2>
+          <p>上傳明信片需要會員身分，登入後即可送出待審核資料。</p>
+          <a class="primary-button" href="#login">登入會員</a>
+        </div>
+      </article>
+    `, true);
+  }
+
+  return authShell(`
+    <article class="auth-card upload-card">
+      <a class="back-link" href="#login-success">返回會員專區</a>
+      ${logo()}
+      <h2>上傳明信片</h2>
+      <p class="subtitle">送出後會先暫存為待審核資料，審核通過後才會出現在網站。</p>
+      <form class="auth-form upload-form" data-form="postcard-upload">
+        <label class="field file-field">
+          <svg class="field-icon"><use href="#icon-upload"></use></svg>
+          <span data-file-label>選擇圖片 JPG / PNG / WebP，8MB 以內</span>
+          <input name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+        </label>
+        ${field({ icon: "icon-mail", name: "title", placeholder: "明信片標題" })}
+        <div class="upload-grid">
+          ${field({ icon: "icon-globe", name: "country", placeholder: "國家" })}
+          ${field({ icon: "icon-home", name: "city", placeholder: "城市 / 地區" })}
+        </div>
+        <div class="upload-grid">
+          ${field({ icon: "icon-search", name: "latitude", type: "number", placeholder: "緯度，例如 25.0330", required: false })}
+          ${field({ icon: "icon-search", name: "longitude", type: "number", placeholder: "經度，例如 121.5654", required: false })}
+        </div>
+        ${field({ icon: "icon-heart", name: "tags", placeholder: "標籤，可用逗號或 # 分隔", required: false })}
+        <label class="field select-field">
+          <svg class="field-icon"><use href="#icon-briefcase"></use></svg>
+          <select name="postcardType" aria-label="取得方式">
+            <option value="">取得方式</option>
+            <option value="mushroom">打菇</option>
+            <option value="flower">花</option>
+            <option value="explore">探索</option>
+          </select>
+        </label>
+        <button class="primary-button" type="submit">送出審核</button>
+        <p class="status"></p>
+      </form>
+      <aside class="upload-note">
+        <strong>資料規劃</strong>
+        <p>目前會寫入待審核表格，圖片 path 存在 pending 目錄。未來後台審核同意後，再轉入正式明信片資料。</p>
+      </aside>
+    </article>
+  `, true);
+}
+
 async function handleSubmit(event) {
   const searchForm = event.target.closest("form[data-search]");
   if (searchForm) {
@@ -1264,6 +1339,30 @@ async function handleSubmit(event) {
   setStatus(form, "");
 
   try {
+    if (form.dataset.form === "postcard-upload") {
+      if (!state.token) {
+        throw new Error("請先登入會員。");
+      }
+
+      const formData = new FormData(form);
+      for (const key of ["latitude", "longitude", "country", "city", "tags", "postcardType"]) {
+        if (!String(formData.get(key) || "").trim()) {
+          formData.delete(key);
+        }
+      }
+
+      const upload = await fetchAuthorizedJson("/api/members/me/postcard-uploads", {
+        method: "POST",
+        body: formData
+      });
+      state.uploads = [upload, ...state.uploads];
+      form.reset();
+      form.querySelector("[data-file-label]").textContent = "選擇圖片 JPG / PNG / WebP，8MB 以內";
+      setStatus(form, "已送出審核，通過前不會顯示在網站。");
+      showToast("明信片已送出審核");
+      return;
+    }
+
     if (form.dataset.form === "login") {
       const result = await apiPost("/api/members/login", {
         email: values.email,
@@ -1630,6 +1729,8 @@ function render() {
     app.innerHTML = authShell(registerCard());
   } else if (route === "forgot") {
     app.innerHTML = authShell(forgotCard(sessionStorage.getItem("postoria-reset-sent") === "1"));
+  } else if (route === "upload") {
+    app.innerHTML = uploadCard();
   } else if (route === "login-success") {
     app.innerHTML = renderLoginSuccess();
   } else {
