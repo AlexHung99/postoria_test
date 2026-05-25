@@ -361,7 +361,9 @@ function updateCatalogModalInPlace() {
       : `共 ${state.catalog.total.toLocaleString()} 張明信片`;
   }
   if (grid) {
-    grid.innerHTML = state.catalog.items.map(catalogCard).join("");
+    grid.innerHTML = state.catalog.loading
+      ? catalogSkeletonCards(state.catalog.pageSize || 6)
+      : state.catalog.items.map(catalogCard).join("");
   }
 
   main?.querySelectorAll(":scope > .api-note, :scope > .pagination, [data-catalog-dynamic]").forEach(element => element.remove());
@@ -525,6 +527,10 @@ async function apiPost(path, payload) {
 }
 
 function renderHome() {
+  if (state.homeLoading && !state.home) {
+    return homeSkeleton();
+  }
+
   const home = state.home || {
     banners: heroSlides,
     countries,
@@ -564,6 +570,56 @@ function renderHome() {
       ${siteFooter()}
     </section>
   `;
+}
+
+function homeSkeleton() {
+  return `
+    <section class="home-shell is-loading">
+      <div class="hero skeleton-box"></div>
+
+      <section class="section-block explore-section" id="explore">
+        <div class="section-heading">
+          <div>
+            <h2 class="explore-title"><svg class="icon"><use href="#icon-globe"></use></svg>探索世界 <small>依照國家與城市分類</small></h2>
+          </div>
+        </div>
+        <div class="country-grid">
+          ${skeletonItems(6, "country-card skeleton-card").join("")}
+        </div>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading">
+          <div>
+            <h2 class="skeleton-line wide"></h2>
+            <p class="skeleton-line short"></p>
+          </div>
+        </div>
+        <div class="catalog-grid">
+          ${catalogSkeletonCards(6)}
+        </div>
+      </section>
+
+      ${siteFooter()}
+    </section>
+  `;
+}
+
+function skeletonItems(count, className) {
+  return Array.from({ length: count }, () => `<article class="${className}"></article>`);
+}
+
+function catalogSkeletonCards(count = 6) {
+  return Array.from({ length: count }, () => `
+    <article class="postcard-card skeleton-postcard" aria-hidden="true">
+      <div class="skeleton-image"></div>
+      <div>
+        <span class="skeleton-line wide"></span>
+        <span class="skeleton-line"></span>
+        <span class="skeleton-line short"></span>
+      </div>
+    </article>
+  `).join("");
 }
 
 function heroMarkup(slides = (state.home?.banners || heroSlides)) {
@@ -687,7 +743,7 @@ function catalogPanel() {
       </div>
       ${state.catalog.error ? `<p class="api-note">${state.catalog.error}</p>` : ""}
       <div class="catalog-grid">
-        ${state.catalog.items.map(catalogCard).join("")}
+        ${state.catalog.loading ? catalogSkeletonCards(state.catalog.pageSize || 6) : state.catalog.items.map(catalogCard).join("")}
       </div>
       ${state.catalog.totalPages > 1 ? `
         <div class="pagination">
@@ -751,7 +807,7 @@ function cityCatalogPanel() {
 
         ${state.catalog.error ? `<p class="api-note">${state.catalog.error}</p>` : ""}
         <div class="catalog-grid">
-          ${state.catalog.items.map(catalogCard).join("")}
+          ${state.catalog.loading ? catalogSkeletonCards(state.catalog.pageSize || 6) : state.catalog.items.map(catalogCard).join("")}
         </div>
         ${!state.catalog.loading && !state.catalog.items.length ? `<p class="api-note">這個城市目前還沒有明信片。</p>` : ""}
         ${state.catalog.totalPages > 1 ? `
@@ -861,11 +917,15 @@ function imageFallbackAttr() {
   return `loading="lazy" decoding="async" onerror="this.onerror=null;this.src='assets/hero-sunset.jpg';"`;
 }
 
+function logoImageAttr() {
+  return `loading="lazy" decoding="async"`;
+}
+
 function siteFooter() {
   return `
     <footer class="site-footer">
       <div class="footer-brand">
-        <img class="brand-logo footer-logo" src="assets/logo-header.png" alt="Postoria">
+        <img class="brand-logo footer-logo" src="assets/logo-header.png" alt="Postoria" ${logoImageAttr()}>
       </div>
       <nav>
         <a href="#explore">探索世界</a>
@@ -911,7 +971,7 @@ function renderAuthActions() {
 
 function logo() {
   return `
-    <img class="auth-logo" src="assets/logo-mark.png" alt="Postoria">
+    <img class="auth-logo" src="assets/logo-mark.png" alt="Postoria" ${logoImageAttr()}>
   `;
 }
 

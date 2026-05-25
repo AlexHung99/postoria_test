@@ -305,6 +305,68 @@ img {
   font-size: 14px;
 }
 
+.skeleton-box,
+.skeleton-card,
+.skeleton-image,
+.skeleton-line {
+  position: relative;
+  overflow: hidden;
+  background: #edf3f3;
+}
+
+.skeleton-box::after,
+.skeleton-card::after,
+.skeleton-image::after,
+.skeleton-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.68), transparent);
+  animation: skeleton-shimmer 1.35s infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.is-loading .hero.skeleton-box {
+  aspect-ratio: 1280 / 500;
+  min-height: 260px;
+}
+
+.skeleton-card {
+  min-height: 182px;
+}
+
+.skeleton-postcard {
+  pointer-events: none;
+}
+
+.skeleton-postcard .skeleton-image {
+  width: 100%;
+  height: clamp(160px, 16vw, 230px);
+}
+
+.skeleton-line {
+  display: block;
+  width: 72%;
+  height: 14px;
+  margin: 8px 0;
+  border-radius: 999px;
+}
+
+.skeleton-line.wide {
+  width: 88%;
+  height: 18px;
+}
+
+.skeleton-line.short {
+  width: 44%;
+}
+
 .section-block {
   padding: 34px 0 0;
 }
