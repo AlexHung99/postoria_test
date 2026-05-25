@@ -596,7 +596,7 @@ img {
   transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
 }
 
-.catalog-modal .favorite-icon-button {
+.catalog-panel .favorite-icon-button {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -605,6 +605,10 @@ img {
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 8px 18px rgba(15, 48, 60, 0.14);
   backdrop-filter: blur(8px);
+}
+
+.home-shell.catalog-only-mode {
+  padding-top: 18px;
 }
 
 .favorite-icon-button.active {

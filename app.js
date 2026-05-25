@@ -569,18 +569,20 @@ function renderHome() {
   const activeBanners = home.banners.length ? home.banners : heroSlides;
   const searchMode = Boolean(state.search || state.catalog.keyword);
   const countryMode = Boolean(state.catalog.country);
+  const catalogOnlyMode = Boolean(state.catalog.active && state.catalog.showPostcards && state.catalog.limitTop);
+  const hideHero = countryMode || catalogOnlyMode;
   state.slide = state.slide % activeBanners.length;
 
   return `
-    <section class="home-shell ${searchMode ? "search-mode" : ""} ${countryMode ? "country-mode" : ""}">
-      ${countryMode ? "" : `
+    <section class="home-shell ${searchMode ? "search-mode" : ""} ${countryMode ? "country-mode" : ""} ${catalogOnlyMode ? "catalog-only-mode" : ""}">
+      ${hideHero ? "" : `
         <div class="hero" id="hero">
           ${heroMarkup(activeBanners)}
         </div>
       `}
       ${state.homeError ? `<p class="api-note">${state.homeError}</p>` : ""}
 
-      <section class="section-block explore-section" id="explore">
+      ${catalogOnlyMode ? "" : `<section class="section-block explore-section" id="explore">
         <div class="section-heading">
           <div>
             <h2 class="explore-title"><svg class="icon"><use href="#icon-globe"></use></svg>探索世界 <small>依照國家與城市分類</small></h2>
@@ -590,7 +592,7 @@ function renderHome() {
           ${home.countries.map(countryCard).join("")}
         </div>
         ${cityRail()}
-      </section>
+      </section>`}
 
       ${catalogPanel()}
 
