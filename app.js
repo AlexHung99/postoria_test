@@ -676,6 +676,55 @@ function openPopularCatalog() {
   });
 }
 
+async function openFavoriteCatalog() {
+  if (!state.token) {
+    showToast("請先登入會員後查看收藏喜愛");
+    location.hash = "login";
+    return;
+  }
+
+  state.search = "";
+  state.catalog = {
+    ...state.catalog,
+    active: true,
+    country: "",
+    city: "",
+    keyword: "",
+    sort: "latest",
+    page: 1,
+    pageSize: 50,
+    limitTop: true,
+    title: "收藏喜愛",
+    showPostcards: true,
+    loading: true,
+    error: "",
+    items: [],
+    total: 0,
+    totalPages: 0
+  };
+  render();
+
+  try {
+    const items = await fetchAuthorizedJson("/api/members/me/favorites/postcards");
+    state.catalog = {
+      ...state.catalog,
+      items: (items || []).map(mapApiPostcard),
+      total: items?.length || 0,
+      totalPages: 1,
+      loading: false
+    };
+  } catch (error) {
+    state.catalog = {
+      ...state.catalog,
+      loading: false,
+      error: error.message || "無法讀取收藏清單"
+    };
+  }
+
+  render();
+  requestAnimationFrame(() => document.querySelector("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+}
+
 function renderHeroOnly() {
   const hero = document.querySelector("#hero");
   if (hero) hero.innerHTML = heroMarkup();
@@ -977,7 +1026,7 @@ function siteFooter() {
       <nav>
         <a href="#explore">探索世界</a>
         <a href="#popular" data-scroll="popular">熱門收藏</a>
-        <a href="#latest">我的收藏</a>
+        <a href="#latest" data-scroll="latest">我的收藏</a>
         <a href="#login">會員專區</a>
       </nav>
       <p>© 2026 Postoria. All rights reserved.</p>
@@ -1293,6 +1342,14 @@ async function handleClick(event) {
     if (scrollLink.dataset.scroll === "popular") {
       event.preventDefault();
       openPopularCatalog();
+      mobileMenu.classList.remove("open");
+      mobileMenu.setAttribute("aria-hidden", "true");
+      return;
+    }
+
+    if (scrollLink.dataset.scroll === "latest") {
+      event.preventDefault();
+      openFavoriteCatalog();
       mobileMenu.classList.remove("open");
       mobileMenu.setAttribute("aria-hidden", "true");
       return;
