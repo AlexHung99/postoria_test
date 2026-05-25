@@ -1218,6 +1218,18 @@ async function handleSubmit(event) {
 }
 
 async function handleClick(event) {
+  const homeBrand = event.target.closest(".site-header .brand, .mobile-brand");
+  if (homeBrand) {
+    event.preventDefault();
+    resetHomeState();
+    history.pushState(null, "", "#home");
+    mobileMenu.classList.remove("open");
+    mobileMenu.setAttribute("aria-hidden", "true");
+    render();
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+    return;
+  }
+
   const headerSearchButton = event.target.closest(".header-search button");
   if (headerSearchButton) {
     const form = headerSearchButton.closest(".header-search");
@@ -1459,6 +1471,27 @@ function closeCatalogModal() {
     error: ""
   };
   render();
+}
+
+function resetHomeState() {
+  state.search = "";
+  state.catalog = {
+    ...state.catalog,
+    active: false,
+    country: "",
+    city: "",
+    keyword: "",
+    sort: "latest",
+    page: 1,
+    showPostcards: false,
+    items: [],
+    total: 0,
+    totalPages: 0,
+    loading: false,
+    error: ""
+  };
+  document.body.classList.remove("catalog-modal-open", "search-modal-open");
+  closeSearchLightbox();
 }
 
 function render() {
