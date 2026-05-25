@@ -152,6 +152,23 @@ function clearSession() {
   renderAuthActions();
 }
 
+function tokenExpired() {
+  if (!state.token) return false;
+  const expiresAt = localStorage.getItem("postoria-token-expires-at");
+  if (!expiresAt) return true;
+  const expiresAtMs = Date.parse(expiresAt);
+  if (!Number.isFinite(expiresAtMs)) return true;
+  return expiresAtMs <= Date.now();
+}
+
+function clearExpiredSession() {
+  if (!tokenExpired()) return false;
+  clearSession();
+  return true;
+}
+
+clearExpiredSession();
+
 async function loadHomeData() {
   if (state.homeLoading || state.home) return;
   state.homeLoading = true;
@@ -401,6 +418,11 @@ async function fetchJson(path) {
 }
 
 async function fetchAuthorizedJson(path, options = {}) {
+  if (clearExpiredSession()) {
+    render();
+    throw new Error("登入已過期，請重新登入");
+  }
+
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -411,6 +433,11 @@ async function fetchAuthorizedJson(path, options = {}) {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
   if (!response.ok) {
+    if (response.status === 401) {
+      clearSession();
+      render();
+      throw new Error("登入已過期，請重新登入");
+    }
     throw new Error(data?.message || data?.title || `API ${response.status}`);
   }
   return data;
