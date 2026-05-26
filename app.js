@@ -1352,7 +1352,8 @@ async function handleSubmit(event) {
   if (!form) return;
   event.preventDefault();
 
-  const values = Object.fromEntries(new FormData(form).entries());
+  const formData = new FormData(form);
+  const values = Object.fromEntries(formData.entries());
   setBusy(form, true);
   setStatus(form, "");
 
@@ -1362,7 +1363,6 @@ async function handleSubmit(event) {
         throw new Error("請先登入會員。");
       }
 
-      const formData = new FormData(form);
       for (const key of ["latitude", "longitude", "tags", "postcardType"]) {
         if (!String(formData.get(key) || "").trim()) {
           formData.delete(key);
