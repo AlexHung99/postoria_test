@@ -852,12 +852,15 @@ function catalogPanel() {
   const summary = state.catalog.limitTop
     ? `前 ${state.catalog.items.length.toLocaleString()} 名明信片`
     : state.catalog.loading ? "讀取中..." : `共 ${state.catalog.total.toLocaleString()} 張明信片`;
+  const headingIcon = state.catalog.limitTop && state.catalog.sort === "popular"
+    ? `<svg class="icon"><use href="#icon-briefcase"></use></svg>`
+    : `<span>▦</span>`;
 
   return `
     <section class="section-block catalog-panel" id="catalog">
       <div class="section-heading">
         <div>
-          <h2><span>▦</span>${title}</h2>
+          <h2>${headingIcon}${title}</h2>
           <p>${summary}</p>
         </div>
         ${state.catalog.limitTop ? "" : `<div class="catalog-tools">
