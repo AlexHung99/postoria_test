@@ -1263,7 +1263,7 @@ function uploadCard() {
   if (!state.token) {
     return authShell(`
       <article class="success-card">
-        <span class="success-mark" aria-hidden="true">!</span>
+        <span class="success-mark warning-mark" aria-hidden="true">!</span>
         <div>
           <h2>請先登入</h2>
           <p>上傳明信片需要會員身分，登入後即可送出待審核資料。</p>
