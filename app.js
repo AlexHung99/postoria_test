@@ -466,9 +466,21 @@ async function fetchAuthorizedJson(path, options = {}) {
       render();
       throw new Error("登入已過期，請重新登入");
     }
-    throw new Error(data?.message || data?.title || `API ${response.status}`);
+    throw new Error(apiErrorMessage(data, `API ${response.status}`));
   }
   return data;
+}
+
+function apiErrorMessage(data, fallback) {
+  const errors = data?.errors;
+  if (errors && typeof errors === "object") {
+    const messages = Object.values(errors).flat().filter(Boolean);
+    if (messages.length) {
+      return messages.join(" ");
+    }
+  }
+
+  return data?.message || data?.title || fallback;
 }
 
 async function loadMemberFavorites() {
@@ -576,7 +588,7 @@ async function apiPost(path, payload) {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
   if (!response.ok) {
-    throw new Error(data?.message || data?.title || "API 請求失敗，請稍後再試。");
+    throw new Error(apiErrorMessage(data, "API 請求失敗，請稍後再試。"));
   }
   return data;
 }
