@@ -2211,13 +2211,13 @@ img {
     padding-right: 0;
   }
 
-  .catalog-modal-header,
-  .catalog-modal-tools {
-    grid-template-columns: 1fr;
+  .catalog-modal-header {
+    display: none;
   }
 
   .catalog-modal-tools {
     grid-template-columns: 1fr auto;
+    margin-top: 0;
   }
 
   .catalog-search {
@@ -2227,22 +2227,6 @@ img {
   .catalog-count {
     justify-self: end;
     font-size: 14px;
-  }
-
-  .catalog-modal-header {
-    padding-bottom: 12px;
-  }
-
-  .catalog-place {
-    display: none;
-  }
-
-  .catalog-summary {
-    justify-content: space-between;
-  }
-
-  .catalog-close {
-    display: none;
   }
 
   .catalog-place img {
