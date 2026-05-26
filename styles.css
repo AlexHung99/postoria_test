@@ -2081,6 +2081,10 @@ img {
     grid-template-columns: 1fr;
   }
 
+  .site-footer .footer-brand {
+    display: none;
+  }
+
   .feature-strip article {
     border-right: 0;
     border-bottom: 1px solid var(--line);
