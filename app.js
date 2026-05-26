@@ -1275,7 +1275,7 @@ function uploadCard() {
       <p class="subtitle">送出後會先暫存為待審核資料，審核通過後才會出現在網站。</p>
       <form class="auth-form upload-form" data-form="postcard-upload">
         <label class="field file-field">
-          <svg class="field-icon"><use href="#icon-upload"></use></svg>
+          <svg class="icon field-icon"><use href="#icon-upload"></use></svg>
           <span data-file-label>選擇圖片 JPG / PNG / WebP，8MB 以內</span>
           <input name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
         </label>
