@@ -1279,11 +1279,6 @@ function uploadCard() {
           <span data-file-label>選擇圖片 JPG / PNG / WebP，8MB 以內</span>
           <input name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
         </label>
-        ${field({ icon: "icon-mail", name: "title", placeholder: "明信片標題" })}
-        <div class="upload-grid">
-          ${field({ icon: "icon-globe", name: "country", placeholder: "國家" })}
-          ${field({ icon: "icon-home", name: "city", placeholder: "城市 / 地區" })}
-        </div>
         <div class="upload-grid">
           ${field({ icon: "icon-search", name: "latitude", type: "number", placeholder: "緯度，例如 25.0330", required: false })}
           ${field({ icon: "icon-search", name: "longitude", type: "number", placeholder: "經度，例如 121.5654", required: false })}
@@ -1350,7 +1345,7 @@ async function handleSubmit(event) {
       }
 
       const formData = new FormData(form);
-      for (const key of ["latitude", "longitude", "country", "city", "tags", "postcardType"]) {
+      for (const key of ["latitude", "longitude", "tags", "postcardType"]) {
         if (!String(formData.get(key) || "").trim()) {
           formData.delete(key);
         }
