@@ -19,6 +19,7 @@ const state = {
   search: "",
   favorites: readJson("postoria-favorites") || [],
   uploads: [],
+  uploadResult: null,
   home: null,
   homeLoading: false,
   homeError: "",
@@ -173,6 +174,7 @@ function clearSession() {
   state.token = "";
   state.favorites = [];
   state.uploads = [];
+  state.uploadResult = null;
   localStorage.removeItem("postoria-member");
   localStorage.removeItem("postoria-token");
   localStorage.removeItem("postoria-token-expires-at");
@@ -1324,8 +1326,41 @@ function uploadCard() {
         <strong>資料規劃</strong>
         <p>目前會寫入待審核表格，圖片 path 存在 pending 目錄。未來後台審核同意後，再轉入正式明信片資料。</p>
       </aside>
+      ${uploadResultDialog()}
     </article>
   `, true);
+}
+
+function uploadResultDialog() {
+  if (!state.uploadResult) return "";
+
+  const upload = state.uploadResult;
+  const coordinates = formatCoordinates(upload.latitude, upload.longitude) || "未提供";
+  const tags = Array.isArray(upload.tags) && upload.tags.length ? upload.tags.join("、") : "未提供";
+  const method = postcardTypeLabel(upload.postcardType);
+  const reviewStatus = upload.reviewStatus === "pending" ? "待審核" : upload.reviewStatus;
+  const fileName = upload.originalFileName || upload.imagePath?.split("/").pop() || "已上傳圖片";
+
+  return `
+    <div class="upload-result-overlay" role="dialog" aria-modal="true" aria-label="上傳已送出">
+      <section class="upload-result-dialog">
+        <span class="upload-result-mark" aria-hidden="true">✓</span>
+        <div>
+          <h3>上傳已送出</h3>
+          <p>後端已收到圖片與資料，審核通過後才會出現在網站。</p>
+        </div>
+        <dl>
+          <div><dt>圖片</dt><dd>${escapeHtml(fileName)}</dd></div>
+          <div><dt>暫存標題</dt><dd>${escapeHtml(upload.title || fileName)}</dd></div>
+          <div><dt>取得方式</dt><dd>${escapeHtml(method)}</dd></div>
+          <div><dt>座標</dt><dd>${escapeHtml(coordinates)}</dd></div>
+          <div><dt>標籤</dt><dd>${escapeHtml(tags)}</dd></div>
+          <div><dt>狀態</dt><dd>${escapeHtml(reviewStatus)}</dd></div>
+        </dl>
+        <button class="primary-button" type="button" data-action="close-upload-result">知道了</button>
+      </section>
+    </div>
+  `;
 }
 
 async function handleSubmit(event) {
@@ -1374,10 +1409,12 @@ async function handleSubmit(event) {
         body: formData
       });
       state.uploads = [upload, ...state.uploads];
+      state.uploadResult = upload;
       form.reset();
       form.querySelector("[data-file-label]").textContent = "選擇圖片 JPG / PNG / WebP，8MB 以內";
       setStatus(form, "已送出審核，通過前不會顯示在網站。");
       showToast("明信片已送出審核");
+      render();
       return;
     }
 
@@ -1597,6 +1634,12 @@ async function handleClick(event) {
 
   if (action?.dataset.action === "close-catalog") {
     closeCatalogModal();
+    return;
+  }
+
+  if (action?.dataset.action === "close-upload-result") {
+    state.uploadResult = null;
+    render();
     return;
   }
 

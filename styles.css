@@ -1665,6 +1665,84 @@ img {
   line-height: 1.7;
 }
 
+.upload-result-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(7, 30, 40, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.upload-result-dialog {
+  display: grid;
+  width: min(520px, 100%);
+  gap: 16px;
+  padding: 30px;
+  border: 1px solid rgba(0, 106, 112, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 28px 70px rgba(15, 48, 60, 0.25);
+  text-align: center;
+}
+
+.upload-result-mark {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  justify-self: center;
+  border: 1px solid rgba(0, 106, 112, 0.2);
+  border-radius: 50%;
+  color: var(--teal-dark);
+  background: #e8f6f8;
+  font-size: 38px;
+  font-weight: 900;
+}
+
+.upload-result-dialog h3 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.upload-result-dialog p {
+  margin: 0;
+  color: #405a66;
+  line-height: 1.7;
+}
+
+.upload-result-dialog dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f7faf9;
+  text-align: left;
+}
+
+.upload-result-dialog dl div {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.upload-result-dialog dt {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.upload-result-dialog dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-weight: 800;
+}
+
 .toggle-password {
   display: inline-grid;
   place-items: center;
@@ -2125,6 +2203,18 @@ img {
 
   .upload-card {
     width: 100%;
+  }
+
+  .upload-result-overlay {
+    padding: 18px;
+  }
+
+  .upload-result-dialog {
+    padding: 24px 20px;
+  }
+
+  .upload-result-dialog dl div {
+    grid-template-columns: 74px minmax(0, 1fr);
   }
 
   .segmented-field {
