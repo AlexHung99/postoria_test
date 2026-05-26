@@ -1069,7 +1069,7 @@ function siteFooter() {
   return `
     <footer class="site-footer">
       <div class="footer-brand">
-        <img class="brand-logo footer-logo" src="assets/logo-header.png" alt="Postoria" ${logoImageAttr()}>
+        <img class="brand-logo footer-logo" src="assets/logo-header_w.png" alt="Postoria" ${logoImageAttr()}>
       </div>
       <nav>
         <a href="#popular" data-scroll="popular">熱門收藏</a>
