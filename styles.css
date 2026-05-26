@@ -961,6 +961,10 @@ img {
   line-height: 1;
 }
 
+.mobile-catalog-close {
+  display: none;
+}
+
 .catalog-modal-tools {
   display: grid;
   grid-template-columns: minmax(240px, 480px) auto;
@@ -2168,6 +2172,31 @@ img {
     margin-right: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  .mobile-catalog-close {
+    position: fixed;
+    right: 18px;
+    bottom: calc(92px + env(safe-area-inset-bottom));
+    z-index: 4;
+    display: grid;
+    width: 52px;
+    height: 52px;
+    place-items: center;
+    border: 1px solid rgba(0, 79, 89, 0.18);
+    border-radius: 50%;
+    color: var(--teal-dark);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 14px 34px rgba(15, 48, 60, 0.2);
+    backdrop-filter: blur(12px);
+    cursor: pointer;
+  }
+
+  .mobile-catalog-close span {
+    display: block;
+    margin-top: -3px;
+    font-size: 34px;
+    line-height: 1;
   }
 
   .catalog-lightbox .catalog-main {

@@ -890,6 +890,9 @@ function cityCatalogPanel() {
   return `
     <div class="catalog-lightbox open" id="catalog">
       <button class="catalog-lightbox-backdrop" type="button" data-action="close-catalog" aria-label="關閉明信片清單"></button>
+      <button class="mobile-catalog-close" type="button" data-action="close-catalog" aria-label="關閉明信片清單">
+        <span aria-hidden="true">×</span>
+      </button>
       <section class="catalog-panel catalog-modal" role="dialog" aria-modal="true" aria-label="${state.catalog.city} 明信片清單">
       <aside class="catalog-sidebar">
         <div class="catalog-sidebar-heading">
