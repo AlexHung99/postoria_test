@@ -919,7 +919,6 @@ function cityCatalogPanel() {
             </div>
           </div>
           <div class="catalog-summary">
-            <span>${state.catalog.loading ? "讀取中..." : `共 ${state.catalog.total.toLocaleString()} 張明信片`}</span>
             <button type="button" class="catalog-close" data-action="close-catalog" aria-label="關閉明信片清單">×</button>
           </div>
         </header>
@@ -933,6 +932,7 @@ function cityCatalogPanel() {
             <button class="link-button ${state.catalog.sort === "latest" ? "active" : ""}" type="button" data-sort="latest">最新上傳</button>
             <button class="link-button ${state.catalog.sort === "popular" ? "active" : ""}" type="button" data-sort="popular">熱門</button>
           </div>
+          <span class="catalog-count">${state.catalog.loading ? "讀取中..." : `共 ${state.catalog.total.toLocaleString()} 張明信片`}</span>
         </div>
 
         ${state.catalog.error ? `<p class="api-note">${state.catalog.error}</p>` : ""}
