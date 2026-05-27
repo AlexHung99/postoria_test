@@ -94,6 +94,10 @@ img {
   object-fit: contain;
 }
 
+.brand-logo-mark {
+  display: none;
+}
+
 .desktop-nav {
   display: flex;
   justify-content: center;
@@ -2184,8 +2188,18 @@ img {
     display: none;
   }
 
-  .brand-logo {
+  .brand-logo-wide {
     width: 164px;
+  }
+
+  .site-header .brand-logo-wide {
+    display: none;
+  }
+
+  .site-header .brand-logo-mark {
+    display: block;
+    width: 58px;
+    height: 58px;
   }
 
   .mobile-logo {
