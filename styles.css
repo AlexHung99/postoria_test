@@ -2198,13 +2198,13 @@ img {
 
   .site-header .brand-logo-mark {
     display: block;
-    width: 58px;
-    height: 58px;
+    width: 48px;
+    height: 48px;
   }
 
   .mobile-logo {
-    width: 76px;
-    height: 76px;
+    width: 180px;
+    height: auto;
   }
 
   .home-shell,
