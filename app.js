@@ -6,6 +6,7 @@ const defaultDataJsonUrl = ["localhost", "127.0.0.1"].includes(location.hostname
   ? `${API_BASE}/data.json`
   : "https://assets.postoria.net/data/data.json";
 const DATA_JSON_URL = localStorage.getItem("postoria-data-json-url") || defaultDataJsonUrl;
+const DATA_JSON_FALLBACK_URL = `${API_BASE}/data.json`;
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -209,12 +210,7 @@ async function loadHomeData() {
   state.homeLoading = true;
 
   try {
-    const response = await fetch(DATA_JSON_URL);
-    if (!response.ok) {
-      throw new Error(`data json ${response.status}`);
-    }
-
-    state.publicData = await response.json();
+    state.publicData = await fetchPublicDataJson();
     state.home = normalizeHomeData(state.publicData);
     state.homeError = "";
     render();
@@ -223,6 +219,25 @@ async function loadHomeData() {
   } finally {
     state.homeLoading = false;
   }
+}
+
+async function fetchPublicDataJson() {
+  const urls = [...new Set([DATA_JSON_URL, DATA_JSON_FALLBACK_URL])];
+  let lastError = null;
+
+  for (const url of urls) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`data json ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error("data json unavailable");
 }
 
 function normalizeHomeData(data) {
