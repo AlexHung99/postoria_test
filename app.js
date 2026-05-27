@@ -20,6 +20,7 @@ const state = {
   favorites: readJson("postoria-favorites") || [],
   uploads: [],
   uploadResult: null,
+  publicData: null,
   home: null,
   homeLoading: false,
   homeError: "",
@@ -204,18 +205,13 @@ async function loadHomeData() {
   state.homeLoading = true;
 
   try {
-    const [response, countriesResponse] = await Promise.all([
-      fetch(`${API_BASE}/api/postoria/home`),
-      fetch(`${API_BASE}/api/postoria/countries`)
-    ]);
+    const response = await fetch(`${API_BASE}/data.json`);
     if (!response.ok) {
-      throw new Error(`home api ${response.status}`);
-    }
-    if (!countriesResponse.ok) {
-      throw new Error(`countries api ${countriesResponse.status}`);
+      throw new Error(`data json ${response.status}`);
     }
 
-    state.home = normalizeHomeData(await response.json(), await countriesResponse.json());
+    state.publicData = await response.json();
+    state.home = normalizeHomeData(state.publicData);
     state.homeError = "";
     render();
   } catch {
@@ -225,7 +221,7 @@ async function loadHomeData() {
   }
 }
 
-function normalizeHomeData(data, allCountries = null) {
+function normalizeHomeData(data) {
   const banners = (data.banners || [])
     .filter(item => item.imageUrl)
     .map(item => ({
@@ -235,14 +231,14 @@ function normalizeHomeData(data, allCountries = null) {
 
   return {
     banners: banners.length ? banners : heroSlides,
-    countries: (allCountries || data.countries || []).map(item => [
+    countries: (data.countries || []).map(item => [
       item.name,
       item.englishName || item.name,
       `${Number(item.count || 0).toLocaleString()} 張明信片`,
       item.imageUrl || "assets/hero-sunset.jpg"
     ]),
     popular: (data.popular || []).map(mapApiPostcard),
-    latest: (data.latest || []).map(mapApiPostcard)
+    latest: (data.latest || data.postcards || []).slice(0, 8).map(mapApiPostcard)
   };
 }
 
@@ -266,6 +262,10 @@ function mapApiPostcard(item) {
 }
 
 async function openCatalog(next = {}) {
+  if (!state.publicData && !state.homeLoading) {
+    await loadHomeData();
+  }
+
   const showPostcards = next.showPostcards ?? state.catalog.showPostcards ?? false;
   const isCountryBrowse = Boolean(next.country && !next.city && !showPostcards);
   const preserveViewport = Boolean(
@@ -293,24 +293,21 @@ async function openCatalog(next = {}) {
   }
 
   try {
-    const query = new URLSearchParams();
-    if (state.catalog.country) query.set("country", state.catalog.country);
-    if (state.catalog.city) query.set("city", state.catalog.city);
-    if (state.catalog.keyword) query.set("keyword", state.catalog.keyword);
-    if (state.catalog.sort) query.set("sort", state.catalog.sort);
-    query.set("page", state.catalog.page);
-    query.set("pageSize", state.catalog.pageSize);
-
-    const [cities, postcards] = await Promise.all([
-      state.catalog.country
-        ? fetchJson(`/api/postoria/cities?country=${encodeURIComponent(state.catalog.country)}`)
-        : Promise.resolve([]),
-      showPostcards ? fetchJson(`/api/postoria/postcards?${query}`) : Promise.resolve({
-        items: [],
-        total: 0,
-        totalPages: 0
-      })
-    ]);
+    const cities = state.catalog.country
+      ? getLocalCities(state.catalog.country)
+      : [];
+    const postcards = showPostcards ? getLocalPostcards({
+      country: state.catalog.country,
+      city: state.catalog.city,
+      keyword: state.catalog.keyword,
+      sort: state.catalog.sort,
+      page: state.catalog.page,
+      pageSize: state.catalog.pageSize
+    }) : {
+      items: [],
+      total: 0,
+      totalPages: 0
+    };
 
     state.catalog = {
       ...state.catalog,
@@ -343,6 +340,56 @@ async function openCatalog(next = {}) {
       target?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
+}
+
+function getLocalCities(country) {
+  return state.publicData?.citiesByCountry?.[country] || [];
+}
+
+function getLocalPostcards({ country = "", city = "", keyword = "", sort = "latest", page = 1, pageSize = 20 } = {}) {
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  let items = [...(state.publicData?.postcards || [])];
+
+  if (country) {
+    items = items.filter(item => item.country === country);
+  }
+  if (city) {
+    items = items.filter(item => item.city === city);
+  }
+  if (normalizedKeyword) {
+    items = items.filter(item => {
+      const fields = [
+        item.title,
+        item.country,
+        item.city,
+        item.legacyId,
+        item.legacyNumber,
+        ...(item.tags || [])
+      ];
+      return fields.some(value => String(value || "").toLowerCase().includes(normalizedKeyword));
+    });
+  }
+
+  if (sort === "popular") {
+    items.sort((a, b) =>
+      Number(b.likeCount || 0) - Number(a.likeCount || 0) ||
+      Number(b.viewCount || 0) - Number(a.viewCount || 0) ||
+      Number(a.legacyNumber || 0) - Number(b.legacyNumber || 0)
+    );
+  } else {
+    items.sort((a, b) =>
+      Number(b.legacyNumber || 0) - Number(a.legacyNumber || 0) ||
+      new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+  }
+
+  const total = items.length;
+  const start = (Math.max(1, page) - 1) * pageSize;
+  return {
+    items: items.slice(start, start + pageSize),
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize))
+  };
 }
 
 function getCatalogViewportSnapshot() {
