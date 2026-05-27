@@ -1557,6 +1557,11 @@ async function handleClick(event) {
     return;
   }
 
+  const mobileMenuLink = event.target.closest("[data-mobile-menu] a[href^='#']");
+  if (mobileMenuLink) {
+    closeMobileMenu();
+  }
+
   const dot = event.target.closest("[data-dot]");
   if (dot) {
     state.slide = Number(dot.dataset.dot);
