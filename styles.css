@@ -2193,10 +2193,19 @@ img {
   }
 
   .site-header .brand-logo-wide {
-    display: none;
+    display: block;
+    width: 164px;
   }
 
   .site-header .brand-logo-mark {
+    display: none;
+  }
+
+  body.is-signed-in .site-header .brand-logo-wide {
+    display: none;
+  }
+
+  body.is-signed-in .site-header .brand-logo-mark {
     display: block;
     width: 52px;
     height: 52px;

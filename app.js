@@ -1154,6 +1154,7 @@ function memberName() {
 function renderAuthActions() {
   const signedIn = Boolean(state.member);
   const name = escapeHtml(memberName());
+  document.body.classList.toggle("is-signed-in", signedIn);
   if (headerAuthActions) {
     headerAuthActions.innerHTML = signedIn ? `
       <a class="solid-button upload-nav-button" href="#upload">
