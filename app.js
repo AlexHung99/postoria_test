@@ -2,6 +2,10 @@ const defaultApiBase = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? "http://localhost:5073"
   : "https://api.postoria.net";
 const API_BASE = localStorage.getItem("postoria-api-base") || defaultApiBase;
+const defaultDataJsonUrl = ["localhost", "127.0.0.1"].includes(location.hostname)
+  ? `${API_BASE}/data.json`
+  : "https://assets.postoria.net/data/data.json";
+const DATA_JSON_URL = localStorage.getItem("postoria-data-json-url") || defaultDataJsonUrl;
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -205,7 +209,7 @@ async function loadHomeData() {
   state.homeLoading = true;
 
   try {
-    const response = await fetch(`${API_BASE}/data.json`);
+    const response = await fetch(DATA_JSON_URL);
     if (!response.ok) {
       throw new Error(`data json ${response.status}`);
     }
