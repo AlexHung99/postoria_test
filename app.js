@@ -1099,11 +1099,33 @@ function catalogCard(card) {
   `;
 }
 
-function formatCoordinates(card) {
-  const latitude = Number(card.latitude);
-  const longitude = Number(card.longitude);
+function formatCoordinates(card, longitudeValue = undefined) {
+  const latitude = Number(typeof card === "object" ? card.latitude : card);
+  const longitude = Number(typeof card === "object" ? card.longitude : longitudeValue);
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return "";
   return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+}
+
+function parseCoordinatePair(value) {
+  const normalized = String(value || "")
+    .trim()
+    .replace(/[，、\s]+/g, ",")
+    .replace(/,+/g, ",")
+    .replace(/^,|,$/g, "");
+  const parts = normalized.split(",").map((part) => Number(part.trim()));
+  if (parts.length !== 2 || parts.some((part) => !Number.isFinite(part))) {
+    return null;
+  }
+
+  const [latitude, longitude] = parts;
+  if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+    return null;
+  }
+
+  return {
+    latitude: latitude.toFixed(7),
+    longitude: longitude.toFixed(7)
+  };
 }
 
 function postcardTypeLabel(type) {
@@ -1366,10 +1388,7 @@ function uploadCard() {
           <span data-file-label>選擇圖片 JPG / PNG / WebP，8MB 以內</span>
           <input name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
         </label>
-        <div class="upload-grid">
-          ${field({ icon: "icon-search", name: "latitude", type: "number", placeholder: "緯度，例如 25.0330", required: false })}
-          ${field({ icon: "icon-search", name: "longitude", type: "number", placeholder: "經度，例如 121.5654", required: false })}
-        </div>
+        ${field({ icon: "icon-search", name: "coordinates", type: "text", placeholder: "經緯度，例如 45.5041130, -73.5442030", required: false })}
         ${field({ icon: "icon-heart", name: "tags", placeholder: "標籤，可用逗號或 # 分隔", required: false })}
         <fieldset class="segmented-field">
           <legend>取得方式</legend>
@@ -1463,6 +1482,18 @@ async function handleSubmit(event) {
     if (form.dataset.form === "postcard-upload") {
       if (!state.token) {
         throw new Error("請先登入會員。");
+      }
+
+      const coordinates = String(formData.get("coordinates") || "").trim();
+      formData.delete("coordinates");
+      if (coordinates) {
+        const parsedCoordinates = parseCoordinatePair(coordinates);
+        if (!parsedCoordinates) {
+          throw new Error("座標格式請輸入：緯度, 經度，例如 45.5041130, -73.5442030");
+        }
+
+        formData.set("latitude", parsedCoordinates.latitude);
+        formData.set("longitude", parsedCoordinates.longitude);
       }
 
       for (const key of ["latitude", "longitude", "tags", "postcardType"]) {
