@@ -1393,15 +1393,15 @@ function uploadCard() {
         <fieldset class="segmented-field">
           <legend>取得方式</legend>
           <label>
-            <input type="radio" name="postcardType" value="mushroom">
+            <input type="radio" name="postcardType" value="MUSHROOM">
             <span>打菇</span>
           </label>
           <label>
-            <input type="radio" name="postcardType" value="flower" checked>
+            <input type="radio" name="postcardType" value="FLOWER" checked>
             <span>花</span>
           </label>
           <label>
-            <input type="radio" name="postcardType" value="explore">
+            <input type="radio" name="postcardType" value="EXPLORATION">
             <span>探索</span>
           </label>
         </fieldset>
