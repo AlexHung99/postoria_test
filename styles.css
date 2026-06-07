@@ -1324,6 +1324,9 @@ img {
 
 .detail-back-link {
   display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  margin-bottom: 0;
   flex: 0 0 auto;
 }
 
@@ -2528,6 +2531,10 @@ img {
     white-space: nowrap;
   }
 
+  .detail-back-link {
+    min-height: 34px;
+  }
+
   .catalog-lightbox {
     align-items: start;
     overflow: hidden;
@@ -2755,6 +2762,10 @@ img {
     padding: 0 9px;
     font-size: 12px;
     white-space: nowrap;
+  }
+
+  .detail-back-link {
+    min-height: 32px;
   }
 
   .postcard-image-lightbox {
