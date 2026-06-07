@@ -25,6 +25,7 @@ const state = {
   favorites: readJson("postoria-favorites") || [],
   uploads: [],
   uploadResult: null,
+  imageLightbox: null,
   publicData: null,
   home: null,
   homeLoading: false,
@@ -138,6 +139,7 @@ function handleChange(event) {
 
 function handleRouteChange() {
   const route = getRoute();
+  state.imageLightbox = null;
   if (route === "popular") {
     openPopularCatalog();
     return;
@@ -213,11 +215,11 @@ async function loadHomeData() {
     state.publicData = await fetchPublicDataJson();
     state.home = normalizeHomeData(state.publicData);
     state.homeError = "";
-    render();
   } catch {
     state.homeError = "目前無法讀取 API，先顯示首頁預覽資料。";
   } finally {
     state.homeLoading = false;
+    render();
   }
 }
 
@@ -411,6 +413,70 @@ function getLocalPostcards({ country = "", city = "", keyword = "", sort = "late
   };
 }
 
+function allPostcards() {
+  return (state.publicData?.postcards || []).map(mapApiPostcard);
+}
+
+function postcardDetailUrl(card) {
+  return `#postcard/${encodeURIComponent(favoriteKey(card))}`;
+}
+
+function findPostcardById(value) {
+  const target = decodeURIComponent(value || "").trim();
+  if (!target) return null;
+  return allPostcards().find(card => {
+    const keys = [
+      card.uid,
+      card.id,
+      card.legacyNumber,
+      card.legacyNumber ? `pc_${card.legacyNumber}` : ""
+    ].map(item => String(item || ""));
+    return keys.includes(target);
+  }) || null;
+}
+
+function absoluteUrl(hash = location.hash || "#home") {
+  return `${location.origin}${location.pathname}${location.search}${hash}`;
+}
+
+function setMeta(name, content, attr = "name") {
+  if (!content) return;
+  let element = document.head.querySelector(`meta[${attr}="${name}"]`);
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(attr, name);
+    document.head.appendChild(element);
+  }
+  element.setAttribute("content", content);
+}
+
+function updatePostcardMeta(card) {
+  if (!card) {
+    document.title = "Postoria";
+    return;
+  }
+  const title = `Postoria｜${card.title}`;
+  const description = [card.country, card.city, postcardTypeLabel(card.postcardType), `編號 ${card.legacyNumber || card.id}`]
+    .filter(Boolean)
+    .join("・");
+  document.title = title;
+  setMeta("description", description);
+  setMeta("og:title", title, "property");
+  setMeta("og:description", description, "property");
+  setMeta("og:image", card.image, "property");
+  setMeta("og:url", absoluteUrl(postcardDetailUrl(card)), "property");
+  setMeta("twitter:card", "summary_large_image");
+}
+
+function updateDefaultMeta() {
+  document.title = "Postoria";
+  setMeta("description", "Postoria postcard collection");
+  setMeta("og:title", "Postoria", "property");
+  setMeta("og:description", "Postoria postcard collection", "property");
+  setMeta("og:url", absoluteUrl("#home"), "property");
+  setMeta("twitter:card", "summary_large_image");
+}
+
 function getCatalogViewportSnapshot() {
   return {
     windowX: window.scrollX,
@@ -579,6 +645,10 @@ function syncFavoriteButtons(id, isActive, favoriteCount = null) {
     if (button.classList.contains("favorite-icon-button")) {
       button.title = isActive ? "移除收藏" : "收藏";
       button.setAttribute("aria-label", label);
+      return;
+    }
+    if (button.classList.contains("detail-favorite-button")) {
+      button.textContent = isActive ? "已收藏" : "收藏";
       return;
     }
 
@@ -838,6 +908,95 @@ function renderHeroOnly() {
   if (hero) hero.innerHTML = heroMarkup();
 }
 
+function renderPostcardDetail(route) {
+  if (!state.publicData && !state.homeLoading && !state.homeError) {
+    loadHomeData();
+  }
+  if (!state.publicData) {
+    return `
+      <section class="postcard-detail-page">
+        <div class="postcard-detail-shell postcard-detail-loading">
+          <div class="detail-image-skeleton skeleton-card"></div>
+          <div class="detail-copy-skeleton">
+            ${skeletonItems(5, "skeleton-line").join("")}
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  const id = route.replace(/^postcard\//, "");
+  const card = findPostcardById(id);
+  updatePostcardMeta(card);
+  if (!card) {
+    return `
+      <section class="postcard-detail-page">
+        <div class="postcard-detail-empty">
+          <p>找不到這張明信片，可能已下架或連結已失效。</p>
+          <a class="solid-button" href="#home">回到首頁</a>
+        </div>
+      </section>
+    `;
+  }
+
+  const active = isFavorite(card);
+  const key = favoriteKey(card);
+  const coordinates = formatCoordinates(card);
+  const tags = card.tags || [];
+  const mapUrl = coordinates
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`
+    : "";
+
+  return `
+    <section class="postcard-detail-page">
+      <a class="back-link detail-back-link" href="#home">← 回到探索</a>
+      <article class="postcard-detail-shell">
+        <div class="postcard-detail-media">
+          <button class="postcard-detail-image-button" type="button" data-detail-image="${escapeAttr(card.image)}" data-detail-title="${escapeAttr(card.title)}">
+            <img src="${card.image}" alt="${escapeAttr(card.title)}" ${imageFallbackAttr()}>
+          </button>
+        </div>
+        <div class="postcard-detail-content">
+          <div class="detail-kicker">${escapeHtml(card.country || "Postoria")}${card.city ? ` / ${escapeHtml(card.city)}` : ""}</div>
+          <h1>${escapeHtml(card.title)}</h1>
+          <div class="detail-badges">
+            <span>${escapeHtml(postcardTypeLabel(card.postcardType))}</span>
+            <span>編號 ${escapeHtml(card.legacyNumber || card.id || "")}</span>
+          </div>
+          ${tags.length ? `<div class="postcard-tags detail-tags">${tags.map(tag => `<button type="button" data-keyword="${escapeAttr(tag)}">#${escapeHtml(tag)}</button>`).join("")}</div>` : ""}
+          <dl class="detail-facts">
+            <div><dt>國家</dt><dd>${escapeHtml(card.country || "未設定")}</dd></div>
+            <div><dt>城市</dt><dd>${escapeHtml(card.city || "未設定")}</dd></div>
+            <div><dt>座標</dt><dd>${coordinates || "未提供"}${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}</dd></div>
+            <div><dt>收藏</dt><dd><span data-favorite-count="${escapeAttr(key)}">${escapeHtml(card.likes)}</span></dd></div>
+            <div><dt>瀏覽</dt><dd>${escapeHtml(card.views)}</dd></div>
+          </dl>
+          <div class="detail-actions">
+            <button type="button" class="solid-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
+            <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
+            ${mapUrl ? `<a class="outline-button" href="${mapUrl}" target="_blank" rel="noopener">在地圖中開啟</a>` : ""}
+          </div>
+        </div>
+      </article>
+      ${imageLightbox()}
+    </section>
+  `;
+}
+
+function imageLightbox() {
+  if (!state.imageLightbox) return "";
+  return `
+    <div class="postcard-image-lightbox open">
+      <button class="postcard-image-backdrop" type="button" data-action="close-detail-image" aria-label="關閉圖片"></button>
+      <figure>
+        <button class="postcard-image-close" type="button" data-action="close-detail-image" aria-label="關閉圖片">×</button>
+        <img src="${escapeAttr(state.imageLightbox.image)}" alt="${escapeAttr(state.imageLightbox.title || "Postoria postcard")}">
+        ${state.imageLightbox.title ? `<figcaption>${escapeHtml(state.imageLightbox.title)}</figcaption>` : ""}
+      </figure>
+    </div>
+  `;
+}
+
 function countryCard([name, english, count, image]) {
   const active = state.catalog.country === name;
   return `
@@ -854,9 +1013,9 @@ function postcardCard(card, rank) {
   return `
     <article class="postcard-card">
       <span class="rank">${rank}</span>
-      <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
+      <a class="postcard-image-link" href="${postcardDetailUrl(card)}"><img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}></a>
       <div>
-        <h3>${card.title}</h3>
+        <h3><a href="${postcardDetailUrl(card)}">${card.title}</a></h3>
         <p>${card.meta}</p>
         <footer>
           <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button>
@@ -873,9 +1032,9 @@ function newCard(card) {
   return `
     <article class="postcard-card new">
       <span class="new-badge">NEW</span>
-      <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
+      <a class="postcard-image-link" href="${postcardDetailUrl(card)}"><img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}></a>
       <div>
-        <h3>${card.title}</h3>
+        <h3><a href="${postcardDetailUrl(card)}">${card.title}</a></h3>
         <p>${card.meta}</p>
         <footer><button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button></footer>
       </div>
@@ -1070,13 +1229,13 @@ function catalogCard(card) {
   const obtainLabel = postcardTypeLabel(card.postcardType);
   return `
     <article class="postcard-card">
-      <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
+      <a class="postcard-image-link" href="${postcardDetailUrl(card)}"><img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}></a>
       <button type="button" class="favorite-icon-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="${active ? "移除收藏" : "加入收藏"} ${card.title}" title="${active ? "移除收藏" : "收藏"}">
         <svg class="icon"><use href="#icon-heart"></use></svg>
       </button>
       <div>
         <div class="postcard-title-row">
-          <h3>${card.title}</h3>
+          <h3><a href="${postcardDetailUrl(card)}">${card.title}</a></h3>
         </div>
         ${tags.length ? `<div class="postcard-tags">${tags.map(tag => `<span>#${tag}</span>`).join("")}</div>` : ""}
         <div class="postcard-details">
@@ -1728,6 +1887,22 @@ async function handleClick(event) {
     return;
   }
 
+  const sharePostcardButton = event.target.closest("[data-share-postcard]");
+  if (sharePostcardButton) {
+    await sharePostcard(sharePostcardButton.dataset.sharePostcard);
+    return;
+  }
+
+  const detailImage = event.target.closest("[data-detail-image]");
+  if (detailImage) {
+    state.imageLightbox = {
+      image: detailImage.dataset.detailImage,
+      title: detailImage.dataset.detailTitle || ""
+    };
+    render();
+    return;
+  }
+
   const action = event.target.closest("[data-action]");
   if (action?.dataset.action === "clear-search") {
     state.search = "";
@@ -1742,6 +1917,12 @@ async function handleClick(event) {
 
   if (action?.dataset.action === "close-upload-result") {
     state.uploadResult = null;
+    render();
+    return;
+  }
+
+  if (action?.dataset.action === "close-detail-image") {
+    state.imageLightbox = null;
     render();
     return;
   }
@@ -1818,6 +1999,30 @@ async function copyText(text) {
   return copied;
 }
 
+async function sharePostcard(id) {
+  const card = findPostcardById(id);
+  if (!card) {
+    showToast("找不到要分享的明信片");
+    return;
+  }
+  const url = absoluteUrl(postcardDetailUrl(card));
+  const payload = {
+    title: `Postoria｜${card.title}`,
+    text: [card.country, card.city, postcardTypeLabel(card.postcardType)].filter(Boolean).join("・"),
+    url
+  };
+  try {
+    if (navigator.share) {
+      await navigator.share(payload);
+      return;
+    }
+  } catch {
+    // If the native share sheet is cancelled, fall back to copying the link.
+  }
+  const copied = await copyText(url);
+  showToast(copied ? "分享連結已複製" : "無法複製分享連結");
+}
+
 function openSearchLightbox(value = "") {
   if (!searchLightbox) return;
   const input = searchLightbox.querySelector("input");
@@ -1854,6 +2059,7 @@ function closeCatalogModal() {
 
 function resetHomeState() {
   state.search = "";
+  state.imageLightbox = null;
   state.catalog = {
     ...state.catalog,
     active: false,
@@ -1886,6 +2092,9 @@ function render() {
   if (route !== "forgot") {
     sessionStorage.removeItem("postoria-reset-sent");
   }
+  if (!route.startsWith("postcard/")) {
+    updateDefaultMeta();
+  }
 
   if (route === "login") {
     app.innerHTML = authShell(loginCard());
@@ -1897,8 +2106,12 @@ function render() {
     app.innerHTML = uploadCard();
   } else if (route === "login-success") {
     app.innerHTML = renderLoginSuccess();
+  } else if (route.startsWith("postcard/")) {
+    app.innerHTML = renderPostcardDetail(route);
   } else {
-    loadHomeData();
+    if (!state.home && !state.homeLoading && !state.homeError) {
+      loadHomeData();
+    }
     app.innerHTML = renderHome();
     document.body.classList.toggle("catalog-modal-open", Boolean(state.catalog.country && state.catalog.city && state.catalog.showPostcards));
     if (pendingAnchorScroll) {
