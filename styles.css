@@ -2590,20 +2590,31 @@ img {
 
   body:has(.postcard-detail-page) {
     padding-bottom: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  html:has(.postcard-detail-page) {
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .postcard-detail-page {
     width: min(100% - 18px, 640px);
-    height: calc(100dvh - 152px);
+    height: auto;
+    min-height: calc(100dvh - 152px);
     padding-top: 10px;
     padding-bottom: 10px;
+    overflow: visible;
   }
 
   .postcard-detail-shell {
-    grid-template-rows: minmax(0, 52%) minmax(0, 48%);
+    grid-template-rows: auto auto;
     gap: 0;
-    height: calc(100% - 36px);
+    height: auto;
+    min-height: calc(100dvh - 188px);
     border-radius: 18px;
+    overflow: visible;
   }
 
   .postcard-detail-image-button img {
@@ -2612,6 +2623,7 @@ img {
 
   .postcard-detail-content {
     padding: 10px 12px;
+    overflow: visible;
   }
 
   .postcard-detail-content h1 {
