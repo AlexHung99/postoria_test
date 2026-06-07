@@ -418,7 +418,16 @@ function allPostcards() {
 }
 
 function postcardDetailUrl(card) {
-  return `#postcard/${encodeURIComponent(favoriteKey(card))}`;
+  const shortId = card?.legacyNumber ? String(card.legacyNumber).replace(/^pc_/i, "") : "";
+  return `#pc/${encodeURIComponent(shortId || favoriteKey(card))}`;
+}
+
+function isPostcardDetailRoute(route) {
+  return route.startsWith("postcard/") || route.startsWith("pc/");
+}
+
+function postcardRouteId(route) {
+  return route.replace(/^(postcard|pc)\//, "");
 }
 
 function findPostcardById(value) {
@@ -925,7 +934,7 @@ function renderPostcardDetail(route) {
     `;
   }
 
-  const id = route.replace(/^postcard\//, "");
+  const id = postcardRouteId(route);
   const card = findPostcardById(id);
   updatePostcardMeta(card);
   if (!card) {
@@ -2099,7 +2108,7 @@ function render() {
   if (route !== "forgot") {
     sessionStorage.removeItem("postoria-reset-sent");
   }
-  if (!route.startsWith("postcard/")) {
+  if (!isPostcardDetailRoute(route)) {
     updateDefaultMeta();
   }
 
@@ -2113,7 +2122,7 @@ function render() {
     app.innerHTML = uploadCard();
   } else if (route === "login-success") {
     app.innerHTML = renderLoginSuccess();
-  } else if (route.startsWith("postcard/")) {
+  } else if (isPostcardDetailRoute(route)) {
     app.innerHTML = renderPostcardDetail(route);
   } else {
     if (!state.home && !state.homeLoading && !state.homeError) {
