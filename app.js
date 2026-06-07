@@ -949,7 +949,14 @@ function renderPostcardDetail(route) {
 
   return `
     <section class="postcard-detail-page">
-      <a class="back-link detail-back-link" href="#home">← 回到探索</a>
+      <div class="postcard-detail-toolbar">
+        <a class="back-link detail-back-link" href="#home">← 回到探索</a>
+        <div class="detail-actions detail-toolbar-actions">
+          <button type="button" class="solid-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
+          <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
+          ${mapUrl ? `<a class="outline-button" href="${mapUrl}" target="_blank" rel="noopener">地圖開啟</a>` : ""}
+        </div>
+      </div>
       <article class="postcard-detail-shell">
         <div class="postcard-detail-media">
           <button class="postcard-detail-image-button" type="button" data-detail-image="${escapeAttr(card.image)}" data-detail-title="${escapeAttr(card.title)}">
@@ -971,7 +978,7 @@ function renderPostcardDetail(route) {
             <div><dt>收藏</dt><dd><span data-favorite-count="${escapeAttr(key)}">${escapeHtml(card.likes)}</span></dd></div>
             <div><dt>瀏覽</dt><dd>${escapeHtml(card.views)}</dd></div>
           </dl>
-          <div class="detail-actions">
+          <div class="detail-actions detail-inline-actions">
             <button type="button" class="solid-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
             <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
             ${mapUrl ? `<a class="outline-button" href="${mapUrl}" target="_blank" rel="noopener">在地圖中開啟</a>` : ""}
