@@ -2027,8 +2027,9 @@ async function sharePostcard(id) {
     text: [card.country, card.city, postcardTypeLabel(card.postcardType)].filter(Boolean).join("・"),
     url
   };
+  const prefersNativeShare = window.matchMedia?.("(pointer: coarse)")?.matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
   try {
-    if (navigator.share) {
+    if (prefersNativeShare && navigator.share) {
       await navigator.share(payload);
       return;
     }
