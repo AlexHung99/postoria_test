@@ -2592,9 +2592,11 @@ img {
     padding-bottom: 0;
     overflow-x: hidden;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   html:has(.postcard-detail-page) {
+    height: auto;
     overflow-x: hidden;
     overflow-y: auto;
   }
@@ -2612,9 +2614,18 @@ img {
     grid-template-rows: auto auto;
     gap: 0;
     height: auto;
-    min-height: calc(100dvh - 188px);
+    min-height: 0;
     border-radius: 18px;
     overflow: visible;
+  }
+
+  .postcard-detail-media {
+    height: clamp(260px, 46dvh, 420px);
+    min-height: 0;
+  }
+
+  .postcard-detail-image-button {
+    height: 100%;
   }
 
   .postcard-detail-image-button img {
@@ -2681,7 +2692,9 @@ img {
   }
 
   .detail-actions {
+    margin-top: 8px;
     padding-top: 6px;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
   }
 
   .postcard-image-lightbox {
