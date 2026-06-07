@@ -1485,9 +1485,9 @@ img {
 }
 
 .detail-favorite-button.active {
-  color: #fff;
+  color: var(--teal-dark);
   border-color: var(--teal);
-  background: var(--teal);
+  background: #eef7f7;
 }
 
 .detail-related {

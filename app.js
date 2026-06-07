@@ -952,7 +952,7 @@ function renderPostcardDetail(route) {
       <div class="postcard-detail-toolbar">
         <a class="back-link detail-back-link" href="#home">← 回到探索</a>
         <div class="detail-actions detail-toolbar-actions">
-          <button type="button" class="solid-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
+          <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
           <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
           ${mapUrl ? `<a class="outline-button" href="${mapUrl}" target="_blank" rel="noopener">地圖開啟</a>` : ""}
         </div>
@@ -979,7 +979,7 @@ function renderPostcardDetail(route) {
             <div><dt>瀏覽</dt><dd>${escapeHtml(card.views)}</dd></div>
           </dl>
           <div class="detail-actions detail-inline-actions">
-            <button type="button" class="solid-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
+            <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
             <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
             ${mapUrl ? `<a class="outline-button" href="${mapUrl}" target="_blank" rel="noopener">在地圖中開啟</a>` : ""}
           </div>
