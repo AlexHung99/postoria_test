@@ -1480,17 +1480,18 @@ img {
 .detail-actions .detail-favorite-button {
   flex: 0 0 auto;
   width: auto;
-  border: 1px solid rgba(0, 106, 112, 0.22);
+  border: 1px solid var(--teal);
   border-radius: 999px;
   color: var(--teal-dark);
   background: #fff;
   box-shadow: none;
+  padding: 0 14px;
 }
 
 .detail-favorite-button.active {
   color: var(--teal-dark);
   border-color: var(--teal);
-  background: #eef7f7;
+  background: #fff;
 }
 
 .detail-related {
