@@ -2018,9 +2018,12 @@ async function sharePostcard(id) {
     return;
   }
   const url = absoluteUrl(postcardDetailUrl(card));
+  const shareText = [card.country, card.city, postcardTypeLabel(card.postcardType)]
+    .filter(Boolean)
+    .join("・");
   const payload = {
     title: `Postoria｜${card.title}`,
-    text: [card.country, card.city, postcardTypeLabel(card.postcardType)].filter(Boolean).join("・"),
+    text: [shareText, url].filter(Boolean).join("\n"),
     url
   };
   const prefersNativeShare = window.matchMedia?.("(pointer: coarse)")?.matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
