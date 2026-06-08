@@ -422,6 +422,11 @@ function postcardDetailUrl(card) {
   return `#pc/${encodeURIComponent(shortId || favoriteKey(card))}`;
 }
 
+function postcardShareUrl(card) {
+  const shortId = card?.legacyNumber ? String(card.legacyNumber).replace(/^pc_/i, "") : "";
+  return `${API_BASE}/share/postcard/${encodeURIComponent(shortId || favoriteKey(card))}`;
+}
+
 function isPostcardDetailRoute(route) {
   return route.startsWith("postcard/") || route.startsWith("pc/");
 }
@@ -2017,7 +2022,7 @@ async function sharePostcard(id) {
     showToast("找不到要分享的明信片");
     return;
   }
-  const url = absoluteUrl(postcardDetailUrl(card));
+  const url = postcardShareUrl(card);
   const shareText = [card.country, card.city, postcardTypeLabel(card.postcardType)]
     .filter(Boolean)
     .join("・");
