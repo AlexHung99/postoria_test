@@ -975,14 +975,10 @@ function renderPostcardDetail(route) {
         <div class="postcard-detail-content">
           <div class="detail-kicker">${escapeHtml(card.country || "Postoria")}${card.city ? ` / ${escapeHtml(card.city)}` : ""}</div>
           <h1>${escapeHtml(card.title)}</h1>
-          <div class="detail-badges">
-            <span>${escapeHtml(postcardTypeLabel(card.postcardType))}</span>
-            <span>編號 ${escapeHtml(card.legacyNumber || card.id || "")}</span>
-          </div>
           ${tags.length ? `<div class="postcard-tags detail-tags">${tags.map(tag => `<button type="button" data-keyword="${escapeAttr(tag)}">#${escapeHtml(tag)}</button>`).join("")}</div>` : ""}
           <dl class="detail-facts">
-            <div><dt>國家</dt><dd>${escapeHtml(card.country || "未設定")}</dd></div>
-            <div><dt>城市</dt><dd>${escapeHtml(card.city || "未設定")}</dd></div>
+            <div><dt>編號</dt><dd>${escapeHtml(card.legacyNumber || card.id || "未設定")}</dd></div>
+            <div><dt>取得方式</dt><dd>${escapeHtml(postcardTypeLabel(card.postcardType))}</dd></div>
             <div><dt>座標</dt><dd>${coordinates || "未提供"}${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}</dd></div>
             <div><dt>收藏</dt><dd><span data-favorite-count="${escapeAttr(key)}">${escapeHtml(card.likes)}</span></dd></div>
             <div><dt>瀏覽</dt><dd>${escapeHtml(card.views)}</dd></div>
