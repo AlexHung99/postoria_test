@@ -4,7 +4,7 @@ const defaultApiBase = ["localhost", "127.0.0.1"].includes(location.hostname)
 const API_BASE = localStorage.getItem("postoria-api-base") || defaultApiBase;
 const defaultShareBase = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? API_BASE
-  : "https://postoria.net";
+  : API_BASE;
 const SHARE_BASE = localStorage.getItem("postoria-share-base") || defaultShareBase;
 const defaultDataJsonUrl = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? `${API_BASE}/data.json`
