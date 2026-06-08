@@ -2030,15 +2030,15 @@ async function sharePostcard(id) {
   const shareText = [card.country, card.city, postcardTypeLabel(card.postcardType)]
     .filter(Boolean)
     .join("・");
-  const payload = {
+  const nativeText = [shareText, url].filter(Boolean).join("\n");
+  const nativePayload = {
     title: `Postoria｜${card.title}`,
-    text: shareText,
-    url
+    text: nativeText
   };
   const prefersNativeShare = window.matchMedia?.("(pointer: coarse)")?.matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
   try {
     if (prefersNativeShare && navigator.share) {
-      await navigator.share(payload);
+      await navigator.share(nativePayload);
       return;
     }
   } catch {
