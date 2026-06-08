@@ -2,6 +2,10 @@ const defaultApiBase = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? "http://localhost:5073"
   : "https://api.postoria.net";
 const API_BASE = localStorage.getItem("postoria-api-base") || defaultApiBase;
+const defaultShareBase = ["localhost", "127.0.0.1"].includes(location.hostname)
+  ? API_BASE
+  : "https://postoria.net";
+const SHARE_BASE = localStorage.getItem("postoria-share-base") || defaultShareBase;
 const defaultDataJsonUrl = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? `${API_BASE}/data.json`
   : "https://assets.postoria.net/data/data.json";
@@ -424,7 +428,7 @@ function postcardDetailUrl(card) {
 
 function postcardShareUrl(card) {
   const shortId = card?.legacyNumber ? String(card.legacyNumber).replace(/^pc_/i, "") : "";
-  return `${API_BASE}/share/postcard/${encodeURIComponent(shortId || favoriteKey(card))}`;
+  return `${SHARE_BASE.replace(/\/$/, "")}/p/${encodeURIComponent(shortId || favoriteKey(card))}`;
 }
 
 function isPostcardDetailRoute(route) {
