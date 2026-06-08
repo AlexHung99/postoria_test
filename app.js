@@ -2028,7 +2028,7 @@ async function sharePostcard(id) {
     .join("・");
   const payload = {
     title: `Postoria｜${card.title}`,
-    text: [shareText, url].filter(Boolean).join("\n"),
+    text: shareText,
     url
   };
   const prefersNativeShare = window.matchMedia?.("(pointer: coarse)")?.matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
