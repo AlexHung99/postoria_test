@@ -12,6 +12,7 @@ const defaultDataJsonUrl = ["localhost", "127.0.0.1"].includes(location.hostname
   : "https://assets.postoria.net/data/data.json";
 const DATA_JSON_URL = localStorage.getItem("postoria-data-json-url") || defaultDataJsonUrl;
 const DATA_JSON_FALLBACK_URL = `${API_BASE}/data.json`;
+const AUTH_RETURN_STATE_KEY = "postoria-auth-return-state";
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -731,6 +732,37 @@ function getRoute() {
   return (location.hash.replace(/^#+/, "").split("?")[0] || "home");
 }
 
+function rememberAuthReturnState() {
+  const snapshot = {
+    hash: location.hash || "#home",
+    catalog: state.catalog?.active
+      ? {
+        active: state.catalog.active,
+        country: state.catalog.country,
+        city: state.catalog.city,
+        keyword: state.catalog.keyword,
+        sort: state.catalog.sort,
+        page: state.catalog.page,
+        pageSize: state.catalog.pageSize,
+        limitTop: state.catalog.limitTop,
+        title: state.catalog.title,
+        showPostcards: state.catalog.showPostcards
+      }
+      : null
+  };
+  sessionStorage.setItem(AUTH_RETURN_STATE_KEY, JSON.stringify(snapshot));
+}
+
+function readAuthReturnState() {
+  try {
+    return JSON.parse(sessionStorage.getItem(AUTH_RETURN_STATE_KEY) || "null");
+  } catch {
+    return null;
+  } finally {
+    sessionStorage.removeItem(AUTH_RETURN_STATE_KEY);
+  }
+}
+
 function externalAuthUrl(provider) {
   const returnUrl = `${location.origin}${location.pathname}${location.search}#login-success`;
   return `${API_BASE}/api/external-auth/${provider}/login?returnUrl=${encodeURIComponent(returnUrl)}`;
@@ -749,7 +781,16 @@ function consumeExternalAuthResult() {
 
   try {
     setSession(JSON.parse(memberPayload), accessToken, expiresAt || "");
-    history.replaceState(null, "", `${location.pathname}${location.search}#login-success`);
+    const returnState = readAuthReturnState();
+    const returnHash = returnState?.hash && !/^#?(login|register|forgot|login-success)/.test(returnState.hash)
+      ? returnState.hash
+      : "#login-success";
+    history.replaceState(null, "", `${location.pathname}${location.search}${returnHash}`);
+    if (returnState?.catalog?.active) {
+      openCatalog(returnState.catalog);
+    } else {
+      requestAnimationFrame(render);
+    }
     return true;
   } catch {
     return false;
@@ -1553,7 +1594,7 @@ function loginPromptModal() {
         <h2>登入會員後即可${escapeHtml(feature)}</h2>
         <p>加入 Postoria 會員，可以收藏喜歡的明信片、複製座標，也能上傳你的皮克敏明信片。</p>
         <div class="login-prompt-actions">
-          <a class="login-prompt-google" href="${externalAuthUrl("google")}">
+          <a class="login-prompt-google" href="${externalAuthUrl("google")}" data-preserve-auth-return="true">
             <svg class="google-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path fill="#4285F4" d="M21.8 12.2c0-.7-.1-1.3-.2-1.9H12v3.6h5.5a4.7 4.7 0 0 1-2 3.1v2.6h3.2c1.9-1.8 3.1-4.3 3.1-7.4Z"></path>
               <path fill="#34A853" d="M12 22c2.7 0 5-0.9 6.7-2.4L15.5 17c-.9.6-2 .9-3.5.9-2.7 0-4.9-1.8-5.7-4.2H3v2.6A10 10 0 0 0 12 22Z"></path>
@@ -1807,6 +1848,12 @@ async function handleSubmit(event) {
 }
 
 async function handleClick(event) {
+  const preserveAuthReturn = event.target.closest("[data-preserve-auth-return]");
+  if (preserveAuthReturn) {
+    rememberAuthReturnState();
+    return;
+  }
+
   const homeBrand = event.target.closest(".site-header .brand, .mobile-brand, .bottom-nav a[href='#home']");
   if (homeBrand) {
     event.preventDefault();
@@ -2218,7 +2265,7 @@ function resetHomeState() {
 function render() {
   const route = getRoute();
   if (route === "login-success") {
-    consumeExternalAuthResult();
+    if (consumeExternalAuthResult()) return;
   }
   renderAuthActions();
   document.body.classList.toggle("catalog-modal-open", false);
