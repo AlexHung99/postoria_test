@@ -968,7 +968,7 @@ function renderPostcardDetail(route) {
   return `
     <section class="postcard-detail-page">
       <div class="postcard-detail-toolbar">
-        <a class="back-link detail-back-link" href="#home">← 回到探索</a>
+        <a class="back-link detail-back-link" href="#home">← 更多皮克敏明信片</a>
         <div class="detail-actions detail-toolbar-actions">
           <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
           <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
