@@ -1574,6 +1574,132 @@ img {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
+.login-prompt-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-prompt-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(7, 25, 31, 0.58);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.login-prompt-card {
+  position: relative;
+  z-index: 1;
+  width: min(430px, 100%);
+  padding: 30px;
+  border: 1px solid rgba(0, 99, 112, 0.14);
+  border-radius: 24px;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(229, 207, 121, 0.22), transparent 34%),
+    linear-gradient(145deg, #ffffff 0%, #effafa 100%);
+  box-shadow: 0 28px 80px rgba(7, 30, 40, 0.28);
+}
+
+.login-prompt-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--teal-dark);
+  background: rgba(255, 255, 255, 0.82);
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.login-prompt-kicker {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: var(--teal-dark);
+  background: rgba(0, 121, 135, 0.1);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.login-prompt-card h2 {
+  margin: 0 0 10px;
+  color: var(--teal-dark);
+  font-size: clamp(24px, 4vw, 34px);
+  line-height: 1.12;
+}
+
+.login-prompt-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.login-prompt-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.login-prompt-google,
+.login-prompt-later,
+.login-prompt-secondary a {
+  min-height: 48px;
+  border-radius: 999px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.login-prompt-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid rgba(0, 99, 112, 0.18);
+  color: var(--teal-dark);
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(7, 30, 40, 0.12);
+}
+
+.login-prompt-google .google-logo {
+  width: 22px;
+  height: 22px;
+}
+
+.login-prompt-secondary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.login-prompt-secondary a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: var(--teal);
+}
+
+.login-prompt-later {
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
 .postcard-tags span {
   padding: 5px 9px;
   border-radius: 8px;

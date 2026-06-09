@@ -31,6 +31,7 @@ const state = {
   uploads: [],
   uploadResult: null,
   imageLightbox: null,
+  loginPrompt: null,
   publicData: null,
   home: null,
   homeLoading: false,
@@ -145,6 +146,7 @@ function handleChange(event) {
 function handleRouteChange() {
   const route = getRoute();
   state.imageLightbox = null;
+  state.loginPrompt = null;
   if (route === "popular") {
     openPopularCatalog();
     return;
@@ -1529,6 +1531,48 @@ function externalAuthActions(mode = "login") {
   `;
 }
 
+function openLoginPrompt(feature = "使用這個功能") {
+  state.loginPrompt = { feature };
+  render();
+}
+
+function closeLoginPrompt() {
+  state.loginPrompt = null;
+  render();
+}
+
+function loginPromptModal() {
+  if (!state.loginPrompt) return "";
+  const feature = state.loginPrompt.feature || "使用這個功能";
+  return `
+    <div class="login-prompt-modal" role="dialog" aria-modal="true" aria-label="會員登入提示">
+      <button class="login-prompt-backdrop" type="button" data-action="close-login-prompt" aria-label="關閉登入提示"></button>
+      <section class="login-prompt-card">
+        <button class="login-prompt-close" type="button" data-action="close-login-prompt" aria-label="關閉登入提示">×</button>
+        <span class="login-prompt-kicker">會員功能</span>
+        <h2>登入會員後即可${escapeHtml(feature)}</h2>
+        <p>加入 Postoria 會員，可以收藏喜歡的明信片、複製座標，也能上傳你的皮克敏明信片。</p>
+        <div class="login-prompt-actions">
+          <a class="login-prompt-google" href="${externalAuthUrl("google")}">
+            <svg class="google-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="#4285F4" d="M21.8 12.2c0-.7-.1-1.3-.2-1.9H12v3.6h5.5a4.7 4.7 0 0 1-2 3.1v2.6h3.2c1.9-1.8 3.1-4.3 3.1-7.4Z"></path>
+              <path fill="#34A853" d="M12 22c2.7 0 5-0.9 6.7-2.4L15.5 17c-.9.6-2 .9-3.5.9-2.7 0-4.9-1.8-5.7-4.2H3v2.6A10 10 0 0 0 12 22Z"></path>
+              <path fill="#FBBC05" d="M6.3 13.7a6 6 0 0 1 0-3.4V7.7H3a10 10 0 0 0 0 8.6l3.3-2.6Z"></path>
+              <path fill="#EA4335" d="M12 6.1c1.5 0 2.8.5 3.8 1.5l2.9-2.9A9.7 9.7 0 0 0 12 2a10 10 0 0 0-9 5.7l3.3 2.6C7.1 7.9 9.3 6.1 12 6.1Z"></path>
+            </svg>
+            使用 Google 快速登入
+          </a>
+          <div class="login-prompt-secondary">
+            <a href="#login">Email 登入</a>
+            <a href="#register">註冊會員</a>
+          </div>
+          <button class="login-prompt-later" type="button" data-action="close-login-prompt">稍後再說</button>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
 function forgotCard(sent = false) {
   if (sent) {
     return `
@@ -1905,8 +1949,7 @@ async function handleClick(event) {
   if (favorite) {
     const id = favorite.dataset.favorite;
     if (!state.token) {
-      showToast("請先登入會員後再收藏");
-      location.hash = "login";
+      openLoginPrompt("收藏喜歡的明信片");
       return;
     }
 
@@ -1933,7 +1976,7 @@ async function handleClick(event) {
   const copyCoordinates = event.target.closest("[data-copy-coordinates]");
   if (copyCoordinates) {
     if (!state.token) {
-      showToast("請先登入會員，才能複製座標。");
+      openLoginPrompt("複製明信片座標");
       return;
     }
 
@@ -1977,6 +2020,11 @@ async function handleClick(event) {
 
   if (action?.dataset.action === "close-catalog") {
     closeCatalogModal();
+    return;
+  }
+
+  if (action?.dataset.action === "close-login-prompt") {
+    closeLoginPrompt();
     return;
   }
 
@@ -2025,8 +2073,7 @@ async function handleClick(event) {
   }
 
   if (action?.dataset.action === "need-login") {
-    showToast(`${action.dataset.label}需登入會員後使用`);
-    location.hash = "login";
+    openLoginPrompt(action.dataset.label || "使用這個功能");
   }
 }
 
@@ -2205,6 +2252,10 @@ function render() {
       pendingAnchorScroll = "";
       requestAnimationFrame(() => document.querySelector(`#${targetId}`)?.scrollIntoView({ block: "start" }));
     }
+  }
+
+  if (state.loginPrompt) {
+    app.insertAdjacentHTML("beforeend", loginPromptModal());
   }
 }
 
