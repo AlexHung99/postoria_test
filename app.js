@@ -524,6 +524,36 @@ function restoreCatalogViewport(snapshot) {
   });
 }
 
+function scrollCatalogPostcardsTop() {
+  const scrollToGrid = () => {
+    const grid = document.querySelector(".catalog-main .catalog-grid") || document.querySelector("#catalog .catalog-grid");
+    if (!grid) return;
+
+    const main = document.querySelector(".catalog-main");
+    const modal = document.querySelector(".catalog-modal");
+    const scrollTarget = [main, modal].find(container =>
+      container &&
+      container.contains(grid) &&
+      container.scrollHeight > container.clientHeight + 1
+    );
+
+    if (scrollTarget) {
+      const gridTop = grid.getBoundingClientRect().top;
+      const targetTop = scrollTarget.getBoundingClientRect().top;
+      scrollTarget.scrollTo({
+        top: Math.max(0, scrollTarget.scrollTop + gridTop - targetTop - 16),
+        behavior: "auto"
+      });
+      return;
+    }
+
+    grid.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  requestAnimationFrame(scrollToGrid);
+  window.setTimeout(scrollToGrid, 120);
+}
+
 function setCatalogCityActive(cityName) {
   document.querySelectorAll(".catalog-city-list [data-city]").forEach(button => {
     button.classList.toggle("active", button.dataset.city === cityName);
@@ -1866,7 +1896,8 @@ async function handleClick(event) {
 
   const page = event.target.closest("[data-page]");
   if (page) {
-    openCatalog({ page: Number(page.dataset.page) });
+    await openCatalog({ page: Number(page.dataset.page) });
+    scrollCatalogPostcardsTop();
     return;
   }
 
