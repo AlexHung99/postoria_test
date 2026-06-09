@@ -2,10 +2,11 @@ const defaultApiBase = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? "http://localhost:5073"
   : "https://api.postoria.net";
 const API_BASE = localStorage.getItem("postoria-api-base") || defaultApiBase;
-const defaultShareBase = ["localhost", "127.0.0.1"].includes(location.hostname)
-  ? API_BASE
-  : API_BASE;
-const SHARE_BASE = localStorage.getItem("postoria-share-base") || defaultShareBase;
+const defaultShareBase = "https://pikimin.postoria.net";
+const savedShareBase = localStorage.getItem("postoria-share-base");
+const SHARE_BASE = savedShareBase && !/api\.postoria\.net/i.test(savedShareBase)
+  ? savedShareBase
+  : defaultShareBase;
 const defaultDataJsonUrl = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? `${API_BASE}/data.json`
   : "https://assets.postoria.net/data/data.json";
@@ -961,9 +962,6 @@ function renderPostcardDetail(route) {
   const key = favoriteKey(card);
   const coordinates = formatCoordinates(card);
   const tags = card.tags || [];
-  const mapUrl = coordinates
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`
-    : "";
 
   return `
     <section class="postcard-detail-page">
@@ -972,7 +970,7 @@ function renderPostcardDetail(route) {
         <div class="detail-actions detail-toolbar-actions">
           <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
           <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
-          ${mapUrl ? `<a class="outline-button" href="${mapUrl}" target="_blank" rel="noopener">地圖開啟</a>` : ""}
+          <button type="button" class="outline-button" data-copy-postcard-link="${escapeAttr(key)}">複製連結</button>
         </div>
       </div>
       <article class="postcard-detail-shell">
@@ -995,7 +993,7 @@ function renderPostcardDetail(route) {
           <div class="detail-actions detail-inline-actions">
             <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
             <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
-            ${mapUrl ? `<a class="outline-button" href="${mapUrl}" target="_blank" rel="noopener">在地圖中開啟</a>` : ""}
+            <button type="button" class="outline-button" data-copy-postcard-link="${escapeAttr(key)}">複製連結</button>
           </div>
         </div>
       </article>
@@ -1905,6 +1903,15 @@ async function handleClick(event) {
     const text = copyCoordinates.dataset.copyCoordinates;
     const copied = await copyText(text);
     showToast(copied ? "座標已複製" : "無法複製座標，請手動選取");
+    return;
+  }
+
+  const copyPostcardLinkButton = event.target.closest("[data-copy-postcard-link]");
+  if (copyPostcardLinkButton) {
+    const card = findPostcardById(copyPostcardLinkButton.dataset.copyPostcardLink);
+    const link = card ? postcardShareUrl(card) : "";
+    const copied = await copyText(link);
+    showToast(copied ? "明信片連結已複製" : "無法複製明信片連結");
     return;
   }
 
