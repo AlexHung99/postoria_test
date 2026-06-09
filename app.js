@@ -1901,6 +1901,11 @@ async function handleClick(event) {
 
   const copyCoordinates = event.target.closest("[data-copy-coordinates]");
   if (copyCoordinates) {
+    if (!state.token) {
+      showToast("請先登入會員，才能複製座標。");
+      return;
+    }
+
     const text = copyCoordinates.dataset.copyCoordinates;
     const copied = await copyText(text);
     showToast(copied ? "座標已複製" : "無法複製座標，請手動選取");
