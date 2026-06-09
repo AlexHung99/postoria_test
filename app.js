@@ -283,7 +283,8 @@ function mapApiPostcard(item) {
     legacyNumber: item.legacyNumber,
     latitude: item.latitude,
     longitude: item.longitude,
-    postcardType: item.postcardType
+    postcardType: item.postcardType,
+    shareText: item.shareText || ""
   };
 }
 
@@ -2053,7 +2054,8 @@ async function sharePostcard(id) {
   }
   const url = postcardShareUrl(card);
   const hashtagText = normalizeShareHashtags(card).join(" ");
-  const nativeText = [url, hashtagText].filter(Boolean).join("\n");
+  const customShareText = String(card.shareText || "").trim();
+  const nativeText = [url, customShareText || hashtagText].filter(Boolean).join("\n");
   const nativePayload = {
     title: `Postoria｜${card.title}`,
     text: nativeText
