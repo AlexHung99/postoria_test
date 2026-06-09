@@ -2060,7 +2060,7 @@ async function sharePostcard(id) {
   const url = postcardShareUrl(card);
   const hashtagText = normalizeShareHashtags(card).join(" ");
   const customShareText = String(card.shareText || "").trim();
-  const nativeText = [url, customShareText || hashtagText].filter(Boolean).join("\n");
+  const nativeText = [url, customShareText, hashtagText].filter(Boolean).join("\n");
   const nativePayload = {
     title: `Postoria｜${card.title}`,
     text: nativeText
