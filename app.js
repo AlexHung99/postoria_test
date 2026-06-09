@@ -2020,6 +2020,24 @@ async function copyText(text) {
   return copied;
 }
 
+function normalizeShareHashtags(card) {
+  const fixedTags = ["pikimin", "皮克敏", "皮克敏明信片", "pikimin明信片"];
+  const rawTags = [
+    ...(Array.isArray(card.tags) ? card.tags : []),
+    card.hashtag,
+    card.hashtags
+  ];
+  const tagSet = new Set();
+  rawTags
+    .filter(Boolean)
+    .flatMap(tag => String(tag).split(/[\s,，、#]+/))
+    .map(tag => tag.trim())
+    .filter(Boolean)
+    .forEach(tag => tagSet.add(tag));
+  fixedTags.forEach(tag => tagSet.add(tag));
+  return Array.from(tagSet).map(tag => `#${tag}`);
+}
+
 async function sharePostcard(id) {
   const card = findPostcardById(id);
   if (!card) {
@@ -2027,10 +2045,8 @@ async function sharePostcard(id) {
     return;
   }
   const url = postcardShareUrl(card);
-  const shareText = [card.country, card.city, postcardTypeLabel(card.postcardType)]
-    .filter(Boolean)
-    .join("・");
-  const nativeText = [shareText, url].filter(Boolean).join("\n");
+  const hashtagText = normalizeShareHashtags(card).join(" ");
+  const nativeText = [url, hashtagText].filter(Boolean).join("\n");
   const nativePayload = {
     title: `Postoria｜${card.title}`,
     text: nativeText
@@ -2044,8 +2060,8 @@ async function sharePostcard(id) {
   } catch {
     // If the native share sheet is cancelled, fall back to copying the link.
   }
-  const copied = await copyText(url);
-  showToast(copied ? "分享連結已複製" : "無法複製分享連結");
+  const copied = await copyText(nativeText);
+  showToast(copied ? "分享內容已複製" : "無法複製分享內容");
 }
 
 function openSearchLightbox(value = "") {
