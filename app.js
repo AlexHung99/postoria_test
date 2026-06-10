@@ -148,6 +148,20 @@ function handleRouteChange() {
   const route = getRoute();
   state.imageLightbox = null;
   state.loginPrompt = null;
+  if (route === "search") {
+    state.search = getHashParams().get("q") || "";
+    state.catalog = {
+      ...state.catalog,
+      active: false,
+      country: "",
+      city: "",
+      keyword: "",
+      showPostcards: false
+    };
+    render();
+    requestAnimationFrame(() => document.querySelector(".search-results")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    return;
+  }
   if (route === "popular") {
     openPopularCatalog();
     return;
@@ -430,11 +444,6 @@ function getLocalPostcards({ country = "", city = "", keyword = "", sort = "late
 
 function allPostcards() {
   return (state.publicData?.postcards || []).map(mapApiPostcard);
-}
-
-function postcardDetailUrl(card) {
-  const shortId = card?.legacyNumber ? String(card.legacyNumber).replace(/^pc_/i, "") : "";
-  return `#pc/${encodeURIComponent(shortId || favoriteKey(card))}`;
 }
 
 function postcardShareUrl(card) {
@@ -736,6 +745,32 @@ function showToast(message) {
 
 function getRoute() {
   return (location.hash.replace(/^#+/, "").split("?")[0] || "home");
+}
+
+function getHashParams() {
+  const [, query = ""] = (location.hash || "").replace(/^#+/, "").split("?");
+  return new URLSearchParams(query);
+}
+
+function searchRouteUrl(keyword) {
+  return `#search?q=${encodeURIComponent(keyword || "")}`;
+}
+
+function postcardDetailUrl(card, options = {}) {
+  const shortId = card?.legacyNumber ? String(card.legacyNumber).replace(/^pc_/i, "") : "";
+  const base = `#pc/${encodeURIComponent(shortId || favoriteKey(card))}`;
+  if (options.from === "search" && options.query) {
+    return `${base}?from=search&q=${encodeURIComponent(options.query)}`;
+  }
+  return base;
+}
+
+function postcardDetailBackUrl(route) {
+  const params = getHashParams();
+  if (params.get("from") === "search") {
+    return searchRouteUrl(params.get("q") || state.search || "");
+  }
+  return "#home";
 }
 
 function rememberAuthReturnState() {
@@ -1042,11 +1077,12 @@ function renderPostcardDetail(route) {
   const key = favoriteKey(card);
   const coordinates = formatCoordinates(card);
   const tags = card.tags || [];
+  const backUrl = postcardDetailBackUrl(route);
 
   return `
     <section class="postcard-detail-page">
       <div class="postcard-detail-toolbar">
-        <a class="back-link detail-back-link" href="#home">← 更多皮克敏明信片</a>
+        <a class="back-link detail-back-link" href="${escapeAttr(backUrl)}">← 更多皮克敏明信片</a>
         <div class="detail-actions detail-toolbar-actions">
           <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
           <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
@@ -1159,20 +1195,23 @@ function searchResults() {
         <button class="link-button" type="button" data-action="clear-search">清除搜尋</button>
       </div>
       <div class="result-list">
-        ${(results.length ? results : allCards.slice(0, 3)).map((card, index) => `
+        ${(results.length ? results : allCards.slice(0, 3)).map((card, index) => {
+          const detailUrl = postcardDetailUrl(card, { from: "search", query: state.search });
+          return `
           <article class="result-card">
-            <a class="result-image-link" href="${postcardDetailUrl(card)}">
+            <a class="result-image-link" href="${detailUrl}">
               <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
             </a>
             <div>
-              <h3><a href="${postcardDetailUrl(card)}">${card.title}</a></h3>
+              <h3><a href="${detailUrl}">${card.title}</a></h3>
               <small>${card.meta}　#${(card.tags || []).join(" #")}</small>
             </div>
             <button type="button" class="favorite-button ${isFavorite(card) ? "active" : ""}" data-favorite="${favoriteKey(card)}">
               ${isFavorite(card) ? "♥" : "♡"}
             </button>
           </article>
-        `).join("")}
+        `;
+        }).join("")}
       </div>
     </section>
   `;
@@ -1773,7 +1812,11 @@ async function handleSubmit(event) {
     if (searchForm.dataset.searchScope === "catalog") {
       openCatalog({ keyword: state.search, page: 1, pageSize: 12, limitTop: false, title: "", showPostcards: true });
     } else {
-      openCatalog({ keyword: state.search, country: "", city: "", sort: "latest", page: 1, pageSize: 12, limitTop: false, title: "", showPostcards: true });
+      history.pushState(null, "", searchRouteUrl(state.search));
+      resetHomeState();
+      state.search = keyword.replace(/^#/, "");
+      render();
+      requestAnimationFrame(() => document.querySelector(".search-results")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     }
     closeSearchLightbox();
     showToast(`已搜尋「${keyword}」`);
@@ -2078,6 +2121,7 @@ async function handleClick(event) {
   const action = event.target.closest("[data-action]");
   if (action?.dataset.action === "clear-search") {
     state.search = "";
+    history.pushState(null, "", "#home");
     render();
     return;
   }
@@ -2281,6 +2325,9 @@ function resetHomeState() {
 
 function render() {
   const route = getRoute();
+  if (route === "search") {
+    state.search = getHashParams().get("q") || state.search || "";
+  }
   if (route === "login-success") {
     if (consumeExternalAuthResult()) return;
   }
