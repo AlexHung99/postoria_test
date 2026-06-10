@@ -272,6 +272,12 @@ function normalizeHomeData(data) {
 }
 
 function mapApiPostcard(item) {
+  const typeTag = postcardTypeHashtag(item.postcardType);
+  const tags = Array.from(new Set([
+    ...(Array.isArray(item.tags) ? item.tags : []),
+    typeTag
+  ].filter(Boolean)));
+
   return {
     id: item.legacyId || item.id,
     uid: item.id,
@@ -282,7 +288,7 @@ function mapApiPostcard(item) {
     image: item.imageUrl || "assets/hero-sunset.jpg",
     likes: Number(item.likeCount || 0).toLocaleString(),
     views: Number(item.viewCount || 0).toLocaleString(),
-    tags: item.tags || [],
+    tags,
     legacyNumber: item.legacyNumber,
     latitude: item.latitude,
     longitude: item.longitude,
@@ -1387,6 +1393,16 @@ function postcardTypeLabel(type) {
     EXPLORATION: "探索"
   };
   return labels[String(type || "").toUpperCase()] || "未提供";
+}
+
+function postcardTypeHashtag(type) {
+  const tags = {
+    MUSHROOM: "打菇",
+    FLOWER: "種花",
+    EXPLORE: "探索",
+    EXPLORATION: "探索"
+  };
+  return tags[String(type || "").toUpperCase()] || "";
 }
 
 function escapeAttr(value) {
