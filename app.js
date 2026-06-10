@@ -396,8 +396,22 @@ function getLocalCities(country) {
   return state.publicData?.citiesByCountry?.[country] || [];
 }
 
+function parseSearchTerms(keyword = "") {
+  return String(keyword || "")
+    .split(/[\s,，、]+/)
+    .map(term => term.trim().replace(/^#+/, "").toLowerCase())
+    .filter(Boolean);
+}
+
+function matchesSearchTerms(fields, terms) {
+  const normalizedFields = fields
+    .filter(value => value !== undefined && value !== null)
+    .map(value => String(value).replace(/^#+/, "").toLowerCase());
+  return terms.every(term => normalizedFields.some(value => value.includes(term)));
+}
+
 function getLocalPostcards({ country = "", city = "", keyword = "", sort = "latest", page = 1, pageSize = 20 } = {}) {
-  const normalizedKeyword = keyword.trim().toLowerCase();
+  const searchTerms = parseSearchTerms(keyword);
   let items = [...(state.publicData?.postcards || [])];
 
   if (country) {
@@ -406,7 +420,7 @@ function getLocalPostcards({ country = "", city = "", keyword = "", sort = "late
   if (city) {
     items = items.filter(item => item.city === city);
   }
-  if (normalizedKeyword) {
+  if (searchTerms.length) {
     items = items.filter(item => {
       const fields = [
         item.title,
@@ -416,7 +430,7 @@ function getLocalPostcards({ country = "", city = "", keyword = "", sort = "late
         item.legacyNumber,
         ...(item.tags || [])
       ];
-      return fields.some(value => String(value || "").toLowerCase().includes(normalizedKeyword));
+      return matchesSearchTerms(fields, searchTerms);
     });
   }
 
@@ -1178,11 +1192,11 @@ function newCard(card) {
 }
 
 function searchResults() {
-  const keyword = state.search.toLowerCase();
+  const searchTerms = parseSearchTerms(state.search);
   const allCards = [...(state.home?.popular || cards), ...(state.home?.latest || latest)];
   const results = allCards.filter(card => {
-    const text = [card.id, card.title, card.meta, ...(card.tags || [])].join(" ").toLowerCase();
-    return text.includes(keyword);
+    const fields = [card.id, card.title, card.meta, card.country, card.city, postcardTypeLabel(card.postcardType), ...(card.tags || [])];
+    return matchesSearchTerms(fields, searchTerms);
   });
 
   return `
