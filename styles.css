@@ -162,6 +162,32 @@ img {
   gap: 10px;
 }
 
+.language-select-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.language-select {
+  min-height: 38px;
+  border: 1px solid rgba(0, 105, 112, .22);
+  border-radius: 999px;
+  padding: 0 32px 0 14px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .82);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mobile-menu .language-select-wrap {
+  width: 100%;
+}
+
+.mobile-menu .language-select {
+  width: 100%;
+  border-radius: 18px;
+}
+
 .header-auth-actions {
   display: flex;
   align-items: center;
