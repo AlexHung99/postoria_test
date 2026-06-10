@@ -777,9 +777,25 @@ img {
   object-fit: cover;
 }
 
+.result-image-link {
+  display: block;
+  width: 96px;
+  height: 78px;
+}
+
 .result-card h3,
 .result-card p {
   margin: 0;
+}
+
+.result-card h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.result-card h3 a:hover,
+.result-card h3 a:focus-visible {
+  color: var(--teal);
 }
 
 .result-card small {

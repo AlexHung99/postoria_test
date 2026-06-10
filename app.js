@@ -1161,10 +1161,11 @@ function searchResults() {
       <div class="result-list">
         ${(results.length ? results : allCards.slice(0, 3)).map((card, index) => `
           <article class="result-card">
-            <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
+            <a class="result-image-link" href="${postcardDetailUrl(card)}">
+              <img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}>
+            </a>
             <div>
-              <h3>${card.title}</h3>
-              <p>編號：${card.id}</p>
+              <h3><a href="${postcardDetailUrl(card)}">${card.title}</a></h3>
               <small>${card.meta}　#${(card.tags || []).join(" #")}</small>
             </div>
             <button type="button" class="favorite-button ${isFavorite(card) ? "active" : ""}" data-favorite="${favoriteKey(card)}">
