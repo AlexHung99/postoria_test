@@ -1,4 +1,4 @@
-﻿const defaultApiBase = ["localhost", "127.0.0.1"].includes(location.hostname)
+const defaultApiBase = ["localhost", "127.0.0.1"].includes(location.hostname)
   ? "http://localhost:5073"
   : "https://api.postoria.net";
 const API_BASE = localStorage.getItem("postoria-api-base") || defaultApiBase;
@@ -7,47 +7,12 @@ const savedShareBase = localStorage.getItem("postoria-share-base");
 const SHARE_BASE = savedShareBase && !/api\.postoria\.net/i.test(savedShareBase)
   ? savedShareBase
   : defaultShareBase;
-const SUPPORTED_LANGUAGES = ["zh-TW", "en", "ja"];
-const LANGUAGE_LABELS = {
-  "zh-TW": "蝜葉",
-  en: "EN",
-  ja: "?交隤?
-};
-const DATA_JSON_OVERRIDE_URL = localStorage.getItem("postoria-data-json-url") || "";
+const defaultDataJsonUrl = ["localhost", "127.0.0.1"].includes(location.hostname)
+  ? `${API_BASE}/data.json`
+  : "https://assets.postoria.net/data/data.json";
+const DATA_JSON_URL = localStorage.getItem("postoria-data-json-url") || defaultDataJsonUrl;
+const DATA_JSON_FALLBACK_URL = `${API_BASE}/data.json`;
 const AUTH_RETURN_STATE_KEY = "postoria-auth-return-state";
-
-function normalizeLanguage(value) {
-  const lang = String(value || "").trim();
-  if (/^ja/i.test(lang)) return "ja";
-  if (/^en/i.test(lang)) return "en";
-  return "zh-TW";
-}
-
-function preferredLanguage() {
-  const saved = localStorage.getItem("postoria-language");
-  if (saved) return normalizeLanguage(saved);
-  return normalizeLanguage(navigator.language || navigator.userLanguage || "zh-TW");
-}
-
-function dataJsonUrlForLanguage(lang) {
-  if (DATA_JSON_OVERRIDE_URL) return DATA_JSON_OVERRIDE_URL;
-  const normalized = normalizeLanguage(lang);
-  if (["localhost", "127.0.0.1"].includes(location.hostname)) {
-    return normalized === "zh-TW"
-      ? `${API_BASE}/data.json`
-      : `${API_BASE}/data.${normalized}.json`;
-  }
-  return normalized === "zh-TW"
-    ? "https://assets.postoria.net/data/data.json"
-    : `https://assets.postoria.net/data/data.${normalized}.json`;
-}
-
-function dataJsonFallbackUrlForLanguage(lang) {
-  const normalized = normalizeLanguage(lang);
-  return normalized === "zh-TW"
-    ? `${API_BASE}/data.json`
-    : `${API_BASE}/data.${normalized}.json`;
-}
 
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
@@ -59,7 +24,6 @@ const homeAnchors = new Set(["explore"]);
 let pendingAnchorScroll = homeAnchors.has(getRoute()) ? getRoute() : "";
 
 const state = {
-  lang: preferredLanguage(),
   member: readJson("postoria-member"),
   token: localStorage.getItem("postoria-token") || "",
   slide: 0,
@@ -95,63 +59,63 @@ const state = {
 const heroSlides = [
   {
     image: "assets/banner-01.jpg",
-    eyebrow: "靘銝????靽∠?",
-    title: "?嗉?蝢末?嚗?鈭思???,
-    copy: "?Ｙ揣?犖???塚??渡??芸楛???霈?撘菜?靽∠??賣?????,
+    eyebrow: "來自世界各地的明信片",
+    title: "收藏美好時刻，分享世界",
+    copy: "探索旅人的回憶，整理自己的收藏，讓每張明信片都有故事。",
     place: "Gangnam Library"
   },
   {
     image: "assets/banner-02.jpg",
-    eyebrow: "??憸冽????畾?,
-    title: "???對??園脖????,
-    copy: "?冽?蝐扎?撣??振??嚗翰??唳???縑??,
+    eyebrow: "城市風景與旅途片段",
+    title: "把遠方，收進你的收藏",
+    copy: "用標籤、城市與國家分類，快速找到想看的明信片。",
     place: "Postcard Journey"
   },
   {
     image: "assets/banner-03.jpg",
-    eyebrow: "?梢??嗉?瘥?湔",
-    title: "頝??嗉?璁蝝ａ???,
-    copy: "敺犖瘞??靽∠???嚗?曆?銝撘菜?嗉??◢?胯?,
+    eyebrow: "熱門收藏每日更新",
+    title: "跟著收藏榜探索靈感",
+    copy: "從人氣明信片開始，發現下一張想收藏的風景。",
     place: "Blooming City"
   },
   {
     image: "assets/banner-04.jpg",
-    eyebrow: "??瘣餃? Banner 皜祈岫",
-    title: "?刻??????唳???,
-    copy: "?Ⅱ隤憚?剜?靘???鋆?嚗??踵?甇?? Postoria 銝餉?閬箝?,
+    eyebrow: "舊版活動 Banner 測試",
+    title: "用舊版素材重新排版",
+    copy: "先確認輪播比例與手機裁切，再替換正式 Postoria 主視覺。",
     place: "Archive Banner"
   },
   {
     image: "assets/banner-05.jpg",
-    eyebrow: "Postoria 擐?頛芣",
-    title: "?游??嗉??亙?喳??乩?",
-    copy: "擐??遣蝡?閬箄?撠汗嚗??郊銝脫鞈?摨怠摰嫘?,
+    eyebrow: "Postoria 首頁輪播",
+    title: "更多收藏入口即將接上",
+    copy: "首頁先建立視覺與導覽，再逐步串接資料庫內容。",
     place: "Archive Banner"
   }
 ];
 
 const countries = [
-  ["?交", "JAPAN", "1,250 撘菜?靽∠?", "assets/kyoto.jpg"],
-  ["撣?", "GREECE", "987 撘菜?靽∠?", "assets/hero-sunset.jpg"],
-  ["蝢?", "UNITED STATES", "2,356 撘菜?靽∠?", "assets/california.jpg"],
-  ["瘜?", "FRANCE", "1,102 撘菜?靽∠?", "assets/hongkong.jpg"],
-  ["蝢拙之??, "ITALY", "1,675 撘菜?靽∠?", "assets/osaka.jpg"],
-  ["?ㄚ", "SWITZERLAND", "743 撘菜?靽∠?", "assets/switzerland.jpg"]
+  ["日本", "JAPAN", "1,250 張明信片", "assets/kyoto.jpg"],
+  ["希臘", "GREECE", "987 張明信片", "assets/hero-sunset.jpg"],
+  ["美國", "UNITED STATES", "2,356 張明信片", "assets/california.jpg"],
+  ["法國", "FRANCE", "1,102 張明信片", "assets/hongkong.jpg"],
+  ["義大利", "ITALY", "1,675 張明信片", "assets/osaka.jpg"],
+  ["瑞士", "SWITZERLAND", "743 張明信片", "assets/switzerland.jpg"]
 ];
 
 const cards = [
-  { id: "JP-0001", title: "鈭祇?餅?瘞游笑", meta: "?交?颱漪??, image: "assets/kyoto.jpg", likes: "2,845", views: "12,631", tags: ["?交", "鈭祇", "撖箏?"] },
-  { id: "IT-0032", title: "Positano", meta: "蝢拙之??, image: "assets/osaka.jpg", likes: "2,320", views: "9,876", tags: ["蝢拙之??, "瘚琿?"] },
-  { id: "US-0105", title: "California Coast", meta: "蝢??餃?撌?, image: "assets/california.jpg", likes: "2,105", views: "8,542", tags: ["蝢?", "瘚瑕硫"] },
-  { id: "CH-0077", title: "Lauterbrunnen", meta: "?ㄚ", image: "assets/switzerland.jpg", likes: "1,987", views: "7,654", tags: ["?ㄚ", "撅望"] },
-  { id: "NO-0012", title: "Aurora Night", meta: "?芸?", image: "assets/norway.jpg", likes: "1,832", views: "7,103", tags: ["?芸?", "璆萄?"] }
+  { id: "JP-0001", title: "京都・清水寺", meta: "日本・京都", image: "assets/kyoto.jpg", likes: "2,845", views: "12,631", tags: ["日本", "京都", "寺廟"] },
+  { id: "IT-0032", title: "Positano", meta: "義大利", image: "assets/osaka.jpg", likes: "2,320", views: "9,876", tags: ["義大利", "海邊"] },
+  { id: "US-0105", title: "California Coast", meta: "美國・加州", image: "assets/california.jpg", likes: "2,105", views: "8,542", tags: ["美國", "海岸"] },
+  { id: "CH-0077", title: "Lauterbrunnen", meta: "瑞士", image: "assets/switzerland.jpg", likes: "1,987", views: "7,654", tags: ["瑞士", "山景"] },
+  { id: "NO-0012", title: "Aurora Night", meta: "挪威", image: "assets/norway.jpg", likes: "1,832", views: "7,103", tags: ["挪威", "極光"] }
 ];
 
 const latest = [
-  { id: "JP-0201", title: "憭折???, meta: "?交?餃之??, image: "assets/osaka.jpg", likes: "128", tags: ["?交", "憭折"] },
-  { id: "IT-0119", title: "Cinque Terre", meta: "蝢拙之??, image: "assets/austria.jpg", likes: "96", tags: ["蝢拙之??, "瘚琿?"] },
-  { id: "AT-0077", title: "Hallstatt", meta: "憟批??, image: "assets/austria.jpg", likes: "87", tags: ["憟批??, "皝"] },
-  { id: "IS-0012", title: "Iceland Aurora", meta: "?啣雀", image: "assets/norway.jpg", likes: "64", tags: ["?啣雀", "璆萄?"] }
+  { id: "JP-0201", title: "大阪城・春", meta: "日本・大阪", image: "assets/osaka.jpg", likes: "128", tags: ["日本", "大阪"] },
+  { id: "IT-0119", title: "Cinque Terre", meta: "義大利", image: "assets/austria.jpg", likes: "96", tags: ["義大利", "海邊"] },
+  { id: "AT-0077", title: "Hallstatt", meta: "奧地利", image: "assets/austria.jpg", likes: "87", tags: ["奧地利", "湖景"] },
+  { id: "IS-0012", title: "Iceland Aurora", meta: "冰島", image: "assets/norway.jpg", likes: "64", tags: ["冰島", "極光"] }
 ];
 
 function closeMobileMenu() {
@@ -171,36 +135,13 @@ document.addEventListener("keydown", event => {
 });
 
 function handleChange(event) {
-  const languageSelect = event.target.closest("[data-language-select]");
-  if (languageSelect) {
-    changeLanguage(languageSelect.value);
-    return;
-  }
-
   const input = event.target.closest("input[type='file'][name='image']");
   if (!input) return;
 
   const label = input.closest(".file-field")?.querySelector("[data-file-label]");
   if (label) {
-    label.textContent = input.files?.[0]?.name || "?豢??? JPG / PNG / WebP嚗?MB 隞亙";
+    label.textContent = input.files?.[0]?.name || "選擇圖片 JPG / PNG / WebP，8MB 以內";
   }
-}
-
-function changeLanguage(lang) {
-  const nextLang = normalizeLanguage(lang);
-  if (state.lang === nextLang) return;
-  state.lang = nextLang;
-  localStorage.setItem("postoria-language", nextLang);
-  state.publicData = null;
-  state.home = null;
-  state.homeError = "";
-  state.catalog.items = [];
-  state.catalog.cities = [];
-  state.catalog.total = 0;
-  state.catalog.totalPages = 0;
-  loadHomeData();
-  renderAuthActions();
-  render();
 }
 
 function handleRouteChange() {
@@ -297,7 +238,7 @@ async function loadHomeData() {
     state.home = normalizeHomeData(state.publicData);
     state.homeError = "";
   } catch {
-    state.homeError = "?桀??⊥?霈??API嚗?憿舐內擐??汗鞈???;
+    state.homeError = "目前無法讀取 API，先顯示首頁預覽資料。";
   } finally {
     state.homeLoading = false;
     render();
@@ -305,12 +246,7 @@ async function loadHomeData() {
 }
 
 async function fetchPublicDataJson() {
-  const urls = [...new Set([
-    dataJsonUrlForLanguage(state.lang),
-    dataJsonFallbackUrlForLanguage(state.lang),
-    dataJsonUrlForLanguage("zh-TW"),
-    dataJsonFallbackUrlForLanguage("zh-TW")
-  ])];
+  const urls = [...new Set([DATA_JSON_URL, DATA_JSON_FALLBACK_URL])];
   let lastError = null;
 
   for (const url of urls) {
@@ -341,7 +277,7 @@ function normalizeHomeData(data) {
     countries: (data.countries || []).map(item => [
       item.name,
       item.englishName || item.name,
-      `${Number(item.count || 0).toLocaleString()} 撘菜?靽∠?`,
+      `${Number(item.count || 0).toLocaleString()} 張明信片`,
       item.imageUrl || "assets/hero-sunset.jpg"
     ]),
     popular: (data.popular || []).map(mapApiPostcard),
@@ -360,12 +296,10 @@ function mapApiPostcard(item) {
     id: item.legacyId || item.id,
     uid: item.id,
     title: item.title,
-    meta: [item.country, item.city].filter(Boolean).join("??),
+    meta: [item.country, item.city].filter(Boolean).join("・"),
     country: item.country || "",
     city: item.city || "",
-    image: item.thumbnailUrl || item.imageUrl || "assets/hero-sunset.jpg",
-    fullImage: item.imageUrl || item.mediumImageUrl || item.thumbnailUrl || "assets/hero-sunset.jpg",
-    mediumImage: item.mediumImageUrl || item.imageUrl || item.thumbnailUrl || "assets/hero-sunset.jpg",
+    image: item.imageUrl || "assets/hero-sunset.jpg",
     likes: Number(item.likeCount || 0).toLocaleString(),
     views: Number(item.viewCount || 0).toLocaleString(),
     tags,
@@ -437,7 +371,7 @@ async function openCatalog(next = {}) {
     state.catalog = {
       ...state.catalog,
       loading: false,
-      error: "鞈?霈?仃??隢?敺?閰艾?
+      error: "資料讀取失敗，請稍後再試。"
     };
   }
 
@@ -464,7 +398,7 @@ function getLocalCities(country) {
 
 function parseSearchTerms(keyword = "") {
   return String(keyword || "")
-    .split(/[\s,嚗+/)
+    .split(/[\s,，、]+/)
     .map(term => term.trim().replace(/^#+/, "").toLowerCase())
     .filter(Boolean);
 }
@@ -573,15 +507,15 @@ function updatePostcardMeta(card) {
     document.title = "Postoria";
     return;
   }
-  const title = `Postoria嚚?{card.title}`;
-  const description = [card.country, card.city, postcardTypeLabel(card.postcardType), `蝺刻? ${card.legacyNumber || card.id}`]
+  const title = `Postoria｜${card.title}`;
+  const description = [card.country, card.city, postcardTypeLabel(card.postcardType), `編號 ${card.legacyNumber || card.id}`]
     .filter(Boolean)
-    .join("??);
+    .join("・");
   document.title = title;
   setMeta("description", description);
   setMeta("og:title", title, "property");
   setMeta("og:description", description, "property");
-  setMeta("og:image", card.fullImage || card.image, "property");
+  setMeta("og:image", card.image, "property");
   setMeta("og:url", absoluteUrl(postcardDetailUrl(card)), "property");
   setMeta("twitter:card", "summary_large_image");
 }
@@ -684,8 +618,8 @@ function updateCatalogModalInPlace() {
   if (placeCountry) placeCountry.textContent = state.catalog.country;
   if (summary) {
     summary.textContent = state.catalog.loading
-      ? "霈?葉..."
-      : `??${state.catalog.total.toLocaleString()} 撘菜?靽∠?`;
+      ? "讀取中..."
+      : `共 ${state.catalog.total.toLocaleString()} 張明信片`;
   }
   if (grid) {
     grid.innerHTML = state.catalog.loading
@@ -705,7 +639,7 @@ function updateCatalogModalInPlace() {
     const empty = document.createElement("p");
     empty.className = "api-note";
     empty.dataset.catalogDynamic = "true";
-    empty.textContent = "?桀?瘝?蝚血?璇辣??靽∠???;
+    empty.textContent = "目前沒有符合條件的明信片。";
     grid?.after(empty);
   }
   if (main && state.catalog.totalPages > 1) {
@@ -713,9 +647,9 @@ function updateCatalogModalInPlace() {
     pagination.className = "pagination";
     pagination.dataset.catalogDynamic = "true";
     pagination.innerHTML = `
-      <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>??/button>
+      <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>‹</button>
       <span>${state.catalog.page} / ${state.catalog.totalPages}</span>
-      <button type="button" data-page="${Math.min(state.catalog.totalPages, state.catalog.page + 1)}" ${state.catalog.page >= state.catalog.totalPages ? "disabled" : ""}>??/button>
+      <button type="button" data-page="${Math.min(state.catalog.totalPages, state.catalog.page + 1)}" ${state.catalog.page >= state.catalog.totalPages ? "disabled" : ""}>›</button>
     `;
     grid?.after(pagination);
   }
@@ -730,7 +664,7 @@ async function fetchJson(path) {
 async function fetchAuthorizedJson(path, options = {}) {
   if (clearExpiredSession()) {
     render();
-    throw new Error("?餃撌脤???隢??啁??);
+    throw new Error("登入已過期，請重新登入");
   }
 
   const response = await fetch(`${API_BASE}${path}`, {
@@ -746,7 +680,7 @@ async function fetchAuthorizedJson(path, options = {}) {
     if (response.status === 401) {
       clearSession();
       render();
-      throw new Error("?餃撌脤???隢??啁??);
+      throw new Error("登入已過期，請重新登入");
     }
     throw new Error(apiErrorMessage(data, `API ${response.status}`));
   }
@@ -789,20 +723,20 @@ function isFavorite(card) {
 function syncFavoriteButtons(id, isActive, favoriteCount = null) {
   document.querySelectorAll(`[data-favorite="${CSS.escape(id)}"]`).forEach(button => {
     button.classList.toggle("active", isActive);
-    const label = isActive ? "蝘駁?嗉?" : "??嗉?";
+    const label = isActive ? "移除收藏" : "加入收藏";
     if (button.classList.contains("favorite-icon-button")) {
-      button.title = isActive ? "蝘駁?嗉?" : "?嗉?";
+      button.title = isActive ? "移除收藏" : "收藏";
       button.setAttribute("aria-label", label);
       return;
     }
     if (button.classList.contains("detail-favorite-button")) {
-      button.textContent = isActive ? "撌脫?? : "?嗉?";
+      button.textContent = isActive ? "已收藏" : "收藏";
       return;
     }
 
     const text = button.textContent.trim();
     if (text) {
-      button.textContent = text.replace(/^[?乒]/, isActive ? "?? : "??);
+      button.textContent = text.replace(/^[♥♡]/, isActive ? "♥" : "♡");
     }
   });
 
@@ -940,7 +874,7 @@ async function apiPost(path, payload) {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
   if (!response.ok) {
-    throw new Error(apiErrorMessage(data, "API 隢?憭望?嚗?蝔??岫??));
+    throw new Error(apiErrorMessage(data, "API 請求失敗，請稍後再試。"));
   }
   return data;
 }
@@ -975,7 +909,7 @@ function renderHome() {
       ${catalogOnlyMode ? "" : `<section class="section-block explore-section" id="explore">
         <div class="section-heading">
           <div>
-            <h2 class="explore-title"><svg class="icon"><use href="#icon-globe"></use></svg>?Ｙ揣銝? <small>靘?振??撣?憿?/small></h2>
+            <h2 class="explore-title"><svg class="icon"><use href="#icon-globe"></use></svg>探索世界 <small>依照國家與城市分類</small></h2>
           </div>
         </div>
         <div class="country-grid">
@@ -1001,7 +935,7 @@ function homeSkeleton() {
       <section class="section-block explore-section" id="explore">
         <div class="section-heading">
           <div>
-            <h2 class="explore-title"><svg class="icon"><use href="#icon-globe"></use></svg>?Ｙ揣銝? <small>靘?振??撣?憿?/small></h2>
+            <h2 class="explore-title"><svg class="icon"><use href="#icon-globe"></use></svg>探索世界 <small>依照國家與城市分類</small></h2>
           </div>
         </div>
         <div class="country-grid">
@@ -1048,7 +982,7 @@ function heroMarkup(slides = (state.home?.banners || heroSlides)) {
   return `
     <img src="${slide.image}" alt="${slide.place}" ${imageFallbackAttr()}>
     <div class="hero-dots">
-      ${slides.map((_, index) => `<button type="button" data-dot="${index}" class="${index === state.slide ? "active" : ""}" aria-label="???啁洵 ${index + 1} 撘?></button>`).join("")}
+      ${slides.map((_, index) => `<button type="button" data-dot="${index}" class="${index === state.slide ? "active" : ""}" aria-label="切換到第 ${index + 1} 張"></button>`).join("")}
     </div>
   `;
 }
@@ -1063,14 +997,14 @@ function openPopularCatalog() {
     page: 1,
     pageSize: 50,
     limitTop: true,
-    title: "?梢??嗉? TOP 50",
+    title: "熱門收藏 TOP 50",
     showPostcards: true
   });
 }
 
 async function openFavoriteCatalog() {
   if (!state.token) {
-    showToast("隢??餃?敺?????);
+    showToast("請先登入會員後查看收藏喜愛");
     location.hash = "login";
     return;
   }
@@ -1086,7 +1020,7 @@ async function openFavoriteCatalog() {
     page: 1,
     pageSize: 50,
     limitTop: true,
-    title: "?嗉???",
+    title: "收藏喜愛",
     showPostcards: true,
     loading: true,
     error: "",
@@ -1109,7 +1043,7 @@ async function openFavoriteCatalog() {
     state.catalog = {
       ...state.catalog,
       loading: false,
-      error: error.message || "?⊥?霈?????
+      error: error.message || "無法讀取收藏清單"
     };
   }
 
@@ -1146,8 +1080,8 @@ function renderPostcardDetail(route) {
     return `
       <section class="postcard-detail-page">
         <div class="postcard-detail-empty">
-          <p>?曆??圈撐?縑???航撌脖??嗆????撌脣仃??/p>
-          <a class="solid-button" href="#home">?擐?</a>
+          <p>找不到這張明信片，可能已下架或連結已失效。</p>
+          <a class="solid-button" href="#home">回到首頁</a>
         </div>
       </section>
     `;
@@ -1162,17 +1096,17 @@ function renderPostcardDetail(route) {
   return `
     <section class="postcard-detail-page">
       <div class="postcard-detail-toolbar">
-        <a class="back-link detail-back-link" href="${escapeAttr(backUrl)}">???游??桀???靽∠?</a>
+        <a class="back-link detail-back-link" href="${escapeAttr(backUrl)}">← 更多皮克敏明信片</a>
         <div class="detail-actions detail-toolbar-actions">
-          <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "撌脫?? : "?嗉?"}</button>
-          <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">?澈</button>
-          <button type="button" class="outline-button" data-copy-postcard-link="${escapeAttr(key)}">銴ˊ???</button>
+          <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
+          <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
+          <button type="button" class="outline-button" data-copy-postcard-link="${escapeAttr(key)}">複製連結</button>
         </div>
       </div>
       <article class="postcard-detail-shell">
         <div class="postcard-detail-media">
-          <button class="postcard-detail-image-button" type="button" data-detail-image="${escapeAttr(card.fullImage || card.image)}" data-detail-title="${escapeAttr(card.title)}">
-            <img src="${card.mediumImage || card.fullImage || card.image}" alt="${escapeAttr(card.title)}" ${imageFallbackAttr()}>
+          <button class="postcard-detail-image-button" type="button" data-detail-image="${escapeAttr(card.image)}" data-detail-title="${escapeAttr(card.title)}">
+            <img src="${card.image}" alt="${escapeAttr(card.title)}" ${imageFallbackAttr()}>
           </button>
         </div>
         <div class="postcard-detail-content">
@@ -1180,16 +1114,16 @@ function renderPostcardDetail(route) {
           <h1>${escapeHtml(card.title)}</h1>
           ${tags.length ? `<div class="postcard-tags detail-tags">${tags.map(tag => `<button type="button" data-keyword="${escapeAttr(tag)}">#${escapeHtml(tag)}</button>`).join("")}</div>` : ""}
           <dl class="detail-facts">
-            <div><dt>蝺刻?</dt><dd>${escapeHtml(card.legacyNumber || card.id || "?芾身摰?)}</dd></div>
-            <div><dt>???孵?</dt><dd>${escapeHtml(postcardTypeLabel(card.postcardType))}</dd></div>
-            <div><dt>摨扳?</dt><dd>${coordinates || "?芣?靘?}${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" title="銴ˊ摨扳?"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}</dd></div>
-            <div><dt>?嗉?</dt><dd><span data-favorite-count="${escapeAttr(key)}">${escapeHtml(card.likes)}</span></dd></div>
-            <div><dt>?汗</dt><dd>${escapeHtml(card.views)}</dd></div>
+            <div><dt>編號</dt><dd>${escapeHtml(card.legacyNumber || card.id || "未設定")}</dd></div>
+            <div><dt>取得方式</dt><dd>${escapeHtml(postcardTypeLabel(card.postcardType))}</dd></div>
+            <div><dt>座標</dt><dd>${coordinates || "未提供"}${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}</dd></div>
+            <div><dt>收藏</dt><dd><span data-favorite-count="${escapeAttr(key)}">${escapeHtml(card.likes)}</span></dd></div>
+            <div><dt>瀏覽</dt><dd>${escapeHtml(card.views)}</dd></div>
           </dl>
           <div class="detail-actions detail-inline-actions">
-            <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "撌脫?? : "?嗉?"}</button>
-            <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">?澈</button>
-            <button type="button" class="outline-button" data-copy-postcard-link="${escapeAttr(key)}">銴ˊ???</button>
+            <button type="button" class="outline-button favorite-button detail-favorite-button ${active ? "active" : ""}" data-favorite="${escapeAttr(key)}">${active ? "已收藏" : "收藏"}</button>
+            <button type="button" class="outline-button" data-share-postcard="${escapeAttr(key)}">分享</button>
+            <button type="button" class="outline-button" data-copy-postcard-link="${escapeAttr(key)}">複製連結</button>
           </div>
         </div>
       </article>
@@ -1202,9 +1136,9 @@ function imageLightbox() {
   if (!state.imageLightbox) return "";
   return `
     <div class="postcard-image-lightbox open">
-      <button class="postcard-image-backdrop" type="button" data-action="close-detail-image" aria-label="????"></button>
+      <button class="postcard-image-backdrop" type="button" data-action="close-detail-image" aria-label="關閉圖片"></button>
       <figure>
-        <button class="postcard-image-close" type="button" data-action="close-detail-image" aria-label="????">?</button>
+        <button class="postcard-image-close" type="button" data-action="close-detail-image" aria-label="關閉圖片">×</button>
         <img src="${escapeAttr(state.imageLightbox.image)}" alt="${escapeAttr(state.imageLightbox.title || "Postoria postcard")}">
         ${state.imageLightbox.title ? `<figcaption>${escapeHtml(state.imageLightbox.title)}</figcaption>` : ""}
       </figure>
@@ -1233,8 +1167,8 @@ function postcardCard(card, rank) {
         <h3><a href="${postcardDetailUrl(card)}">${card.title}</a></h3>
         <p>${card.meta}</p>
         <footer>
-          <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="?嗉? ${card.title}">${active ? "?? : "??} ${card.likes}</button>
-          <span>??${card.views}</span>
+          <button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button>
+          <span>◎ ${card.views}</span>
         </footer>
       </div>
     </article>
@@ -1251,7 +1185,7 @@ function newCard(card) {
       <div>
         <h3><a href="${postcardDetailUrl(card)}">${card.title}</a></h3>
         <p>${card.meta}</p>
-        <footer><button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="?嗉? ${card.title}">${active ? "?? : "??} ${card.likes}</button></footer>
+        <footer><button type="button" class="favorite-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="收藏 ${card.title}">${active ? "♥" : "♡"} ${card.likes}</button></footer>
       </div>
     </article>
   `;
@@ -1269,10 +1203,10 @@ function searchResults() {
     <section class="section-block search-results">
       <div class="section-heading">
         <div>
-          <h2><span>??/span>??蝯?</h2>
-          <p>??{state.search}? ${results.length} 撘菜?靽∠?</p>
+          <h2><span>⌕</span>搜尋結果</h2>
+          <p>「${state.search}」共 ${results.length} 張明信片</p>
         </div>
-        <button class="link-button" type="button" data-action="clear-search">皜??</button>
+        <button class="link-button" type="button" data-action="clear-search">清除搜尋</button>
       </div>
       <div class="result-list">
         ${(results.length ? results : allCards.slice(0, 3)).map((card, index) => {
@@ -1284,10 +1218,10 @@ function searchResults() {
             </a>
             <div>
               <h3><a href="${detailUrl}">${card.title}</a></h3>
-              <small>${card.meta}?#${(card.tags || []).join(" #")}</small>
+              <small>${card.meta}　#${(card.tags || []).join(" #")}</small>
             </div>
             <button type="button" class="favorite-button ${isFavorite(card) ? "active" : ""}" data-favorite="${favoriteKey(card)}">
-              ${isFavorite(card) ? "?? : "??}
+              ${isFavorite(card) ? "♥" : "♡"}
             </button>
           </article>
         `;
@@ -1303,16 +1237,16 @@ function catalogPanel() {
   if (state.catalog.country && state.catalog.city) return cityCatalogPanel();
 
   const title = state.catalog.keyword
-    ? `??嚗?{state.catalog.keyword}`
+    ? `搜尋：${state.catalog.keyword}`
     : state.catalog.title || (state.catalog.city
-      ? `${state.catalog.country}??{state.catalog.city}`
-      : state.catalog.country || "?券?縑??);
+      ? `${state.catalog.country}・${state.catalog.city}`
+      : state.catalog.country || "全部明信片");
   const summary = state.catalog.limitTop
-    ? `??${state.catalog.items.length.toLocaleString()} ??靽∠?`
-    : state.catalog.loading ? "霈?葉..." : `??${state.catalog.total.toLocaleString()} 撘菜?靽∠?`;
+    ? `前 ${state.catalog.items.length.toLocaleString()} 名明信片`
+    : state.catalog.loading ? "讀取中..." : `共 ${state.catalog.total.toLocaleString()} 張明信片`;
   const headingIcon = state.catalog.limitTop && state.catalog.sort === "popular"
     ? `<svg class="icon"><use href="#icon-briefcase"></use></svg>`
-    : `<span>??/span>`;
+    : `<span>▦</span>`;
 
   return `
     <section class="section-block catalog-panel" id="catalog">
@@ -1322,8 +1256,8 @@ function catalogPanel() {
           <p>${summary}</p>
         </div>
         ${state.catalog.limitTop ? "" : `<div class="catalog-tools">
-          <button class="link-button ${state.catalog.sort === "latest" ? "active" : ""}" type="button" data-sort="latest">???/button>
-          <button class="link-button ${state.catalog.sort === "popular" ? "active" : ""}" type="button" data-sort="popular">?梢?</button>
+          <button class="link-button ${state.catalog.sort === "latest" ? "active" : ""}" type="button" data-sort="latest">最新</button>
+          <button class="link-button ${state.catalog.sort === "popular" ? "active" : ""}" type="button" data-sort="popular">熱門</button>
         </div>`}
       </div>
       ${state.catalog.error ? `<p class="api-note">${state.catalog.error}</p>` : ""}
@@ -1332,9 +1266,9 @@ function catalogPanel() {
       </div>
       ${!state.catalog.limitTop && state.catalog.totalPages > 1 ? `
         <div class="pagination">
-          <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>??/button>
+          <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>‹</button>
           <span>${state.catalog.page} / ${state.catalog.totalPages}</span>
-          <button type="button" data-page="${Math.min(state.catalog.totalPages, state.catalog.page + 1)}" ${state.catalog.page >= state.catalog.totalPages ? "disabled" : ""}>??/button>
+          <button type="button" data-page="${Math.min(state.catalog.totalPages, state.catalog.page + 1)}" ${state.catalog.page >= state.catalog.totalPages ? "disabled" : ""}>›</button>
         </div>
       ` : ""}
     </section>
@@ -1347,21 +1281,21 @@ function cityCatalogPanel() {
 
   return `
     <div class="catalog-lightbox open" id="catalog">
-      <button class="catalog-lightbox-backdrop" type="button" data-action="close-catalog" aria-label="???縑????></button>
-      <button class="mobile-catalog-close" type="button" data-action="close-catalog" aria-label="???縑????>
-        <span aria-hidden="true">?</span>
+      <button class="catalog-lightbox-backdrop" type="button" data-action="close-catalog" aria-label="關閉明信片清單"></button>
+      <button class="mobile-catalog-close" type="button" data-action="close-catalog" aria-label="關閉明信片清單">
+        <span aria-hidden="true">×</span>
       </button>
-      <section class="catalog-panel catalog-modal" role="dialog" aria-modal="true" aria-label="${state.catalog.city} ?縑????>
+      <section class="catalog-panel catalog-modal" role="dialog" aria-modal="true" aria-label="${state.catalog.city} 明信片清單">
       <aside class="catalog-sidebar">
         <div class="catalog-sidebar-heading">
-          <strong>?Ｙ揣銝?</strong>
-          <span>?豢????汗?縑??/span>
+          <strong>探索世界</strong>
+          <span>選擇城市瀏覽明信片</span>
         </div>
         <div class="catalog-city-list">
           ${state.catalog.cities.map(city => `
             <button type="button" class="${state.catalog.city === city.name ? "active" : ""}" data-city="${escapeAttr(city.name)}" data-show-postcards="true">
               <img src="${city.imageUrl || "assets/hero-sunset.jpg"}" alt="${city.name}" ${imageFallbackAttr()}>
-              <span><strong>${city.name}</strong><small>${city.count.toLocaleString()} 撘?/small></span>
+              <span><strong>${city.name}</strong><small>${city.count.toLocaleString()} 張</small></span>
             </button>
           `).join("")}
         </div>
@@ -1377,32 +1311,32 @@ function cityCatalogPanel() {
             </div>
           </div>
           <div class="catalog-summary">
-            <button type="button" class="catalog-close" data-action="close-catalog" aria-label="???縑????>?</button>
+            <button type="button" class="catalog-close" data-action="close-catalog" aria-label="關閉明信片清單">×</button>
           </div>
         </header>
 
         <div class="catalog-modal-tools">
           <form data-search data-search-scope="catalog" class="catalog-search">
-            <input name="keyword" type="search" placeholder="???縑??憿?蝐?..">
-            <button type="submit" aria-label="??">??/button>
+            <input name="keyword" type="search" placeholder="搜尋明信片標題、標籤...">
+            <button type="submit" aria-label="搜尋">⌕</button>
           </form>
           <div class="catalog-tools">
-            <button class="link-button ${state.catalog.sort === "latest" ? "active" : ""}" type="button" data-sort="latest">??唬???/button>
-            <button class="link-button ${state.catalog.sort === "popular" ? "active" : ""}" type="button" data-sort="popular">?梢?</button>
+            <button class="link-button ${state.catalog.sort === "latest" ? "active" : ""}" type="button" data-sort="latest">最新上傳</button>
+            <button class="link-button ${state.catalog.sort === "popular" ? "active" : ""}" type="button" data-sort="popular">熱門</button>
           </div>
-          <span class="catalog-count">${state.catalog.loading ? "霈?葉..." : `??${state.catalog.total.toLocaleString()} 撘菜?靽∠?`}</span>
+          <span class="catalog-count">${state.catalog.loading ? "讀取中..." : `共 ${state.catalog.total.toLocaleString()} 張明信片`}</span>
         </div>
 
         ${state.catalog.error ? `<p class="api-note">${state.catalog.error}</p>` : ""}
         <div class="catalog-grid">
           ${state.catalog.loading ? catalogSkeletonCards(state.catalog.pageSize || 6) : state.catalog.items.map(catalogCard).join("")}
         </div>
-        ${!state.catalog.loading && !state.catalog.items.length ? `<p class="api-note">??撣??瘝??縑??/p>` : ""}
+        ${!state.catalog.loading && !state.catalog.items.length ? `<p class="api-note">這個城市目前還沒有明信片。</p>` : ""}
         ${state.catalog.totalPages > 1 ? `
           <div class="pagination">
-            <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>??/button>
+            <button type="button" data-page="${Math.max(1, state.catalog.page - 1)}" ${state.catalog.page <= 1 ? "disabled" : ""}>‹</button>
             <span>${state.catalog.page} / ${state.catalog.totalPages}</span>
-            <button type="button" data-page="${Math.min(state.catalog.totalPages, state.catalog.page + 1)}" ${state.catalog.page >= state.catalog.totalPages ? "disabled" : ""}>??/button>
+            <button type="button" data-page="${Math.min(state.catalog.totalPages, state.catalog.page + 1)}" ${state.catalog.page >= state.catalog.totalPages ? "disabled" : ""}>›</button>
           </div>
         ` : ""}
       </div>
@@ -1414,7 +1348,7 @@ function cityCatalogPanel() {
 function cityRail() {
   if (!state.catalog.country) return "";
   if (state.catalog.loading && !state.catalog.cities.length) {
-    return `<div class="city-rail" id="city-list"><p>?啣?霈?葉...</p></div>`;
+    return `<div class="city-rail" id="city-list"><p>地區讀取中...</p></div>`;
   }
   if (!state.catalog.cities.length) return "";
 
@@ -1422,7 +1356,7 @@ function cityRail() {
     <div class="city-rail" id="city-list">
       <div class="city-rail-title">
         <strong>${state.catalog.country}</strong>
-        <span>?豢??啣??汗?縑??/span>
+        <span>選擇地區瀏覽明信片</span>
       </div>
       <div class="city-tabs">
         ${state.catalog.cities.map(city => `
@@ -1430,7 +1364,7 @@ function cityRail() {
             <img src="${city.imageUrl || "assets/hero-sunset.jpg"}" alt="${city.name}" ${imageFallbackAttr()}>
             <div>
               <h3>${city.name}</h3>
-              <p>${city.count.toLocaleString()} 撘菜?靽∠?</p>
+              <p>${city.count.toLocaleString()} 張明信片</p>
             </div>
           </article>
         `).join("")}
@@ -1449,7 +1383,7 @@ function catalogCard(card) {
   return `
     <article class="postcard-card">
       <a class="postcard-image-link" href="${postcardDetailUrl(card)}"><img src="${card.image}" alt="${card.title}" ${imageFallbackAttr()}></a>
-      <button type="button" class="favorite-icon-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="${active ? "蝘駁?嗉?" : "??嗉?"} ${card.title}" title="${active ? "蝘駁?嗉?" : "?嗉?"}">
+      <button type="button" class="favorite-icon-button ${active ? "active" : ""}" data-favorite="${key}" aria-label="${active ? "移除收藏" : "加入收藏"} ${card.title}" title="${active ? "移除收藏" : "收藏"}">
         <svg class="icon"><use href="#icon-heart"></use></svg>
       </button>
       <div>
@@ -1459,18 +1393,18 @@ function catalogCard(card) {
         ${tags.length ? `<div class="postcard-tags">${tags.map(tag => `<span>#${tag}</span>`).join("")}</div>` : ""}
         <div class="postcard-details">
           <div class="postcard-detail-row">
-            <span>摨扳?</span>
-            <strong>${coordinates || "?芣?靘?}</strong>
-            ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" aria-label="銴ˊ摨扳?" title="銴ˊ摨扳?"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}
+            <span>座標</span>
+            <strong>${coordinates || "未提供"}</strong>
+            ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" aria-label="複製座標" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}
           </div>
           <div class="postcard-detail-row">
-            <span>??</span>
+            <span>取得</span>
             <strong>${obtainLabel}</strong>
           </div>
         </div>
         <footer>
           <span class="favorite-count" data-favorite-count="${key}"><svg class="icon"><use href="#icon-heart"></use></svg>${card.likes}</span>
-          <span class="postcard-number">蝺刻? ${cardNumber}</span>
+          <span class="postcard-number">編號 ${cardNumber}</span>
         </footer>
       </div>
     </article>
@@ -1487,7 +1421,7 @@ function formatCoordinates(card, longitudeValue = undefined) {
 function parseCoordinatePair(value) {
   const normalized = String(value || "")
     .trim()
-    .replace(/[嚗s]+/g, ",")
+    .replace(/[，、\s]+/g, ",")
     .replace(/,+/g, ",")
     .replace(/^,|,$/g, "");
   const parts = normalized.split(",").map((part) => Number(part.trim()));
@@ -1508,52 +1442,21 @@ function parseCoordinatePair(value) {
 
 function postcardTypeLabel(type) {
   const labels = {
-    "zh-TW": {
-      MUSHROOM: "打菇",
-      FLOWER: "種花",
-      EXPLORATION: "探索",
-      UNKNOWN: "未提供"
-    },
-    en: {
-      MUSHROOM: "Mushroom",
-      FLOWER: "Flower",
-      EXPLORATION: "Exploration",
-      UNKNOWN: "Unknown"
-    },
-    ja: {
-      MUSHROOM: "キノコ",
-      FLOWER: "花",
-      EXPLORATION: "探索",
-      UNKNOWN: "未提供"
-    }
+    MUSHROOM: "打菇",
+    FLOWER: "花",
+    EXPLORATION: "探索"
   };
-  const langLabels = labels[state.lang] || labels["zh-TW"];
-  return langLabels[String(type || "").toUpperCase()] || langLabels.UNKNOWN;
+  return labels[String(type || "").toUpperCase()] || "未提供";
 }
 
 function postcardTypeHashtag(type) {
   const tags = {
-    "zh-TW": {
-      MUSHROOM: "打菇",
-      FLOWER: "種花",
-      EXPLORE: "探索",
-      EXPLORATION: "探索"
-    },
-    en: {
-      MUSHROOM: "mushroom",
-      FLOWER: "flower",
-      EXPLORE: "exploration",
-      EXPLORATION: "exploration"
-    },
-    ja: {
-      MUSHROOM: "キノコ",
-      FLOWER: "花",
-      EXPLORE: "探索",
-      EXPLORATION: "探索"
-    }
+    MUSHROOM: "打菇",
+    FLOWER: "種花",
+    EXPLORE: "探索",
+    EXPLORATION: "探索"
   };
-  const langTags = tags[state.lang] || tags["zh-TW"];
-  return langTags[String(type || "").toUpperCase()] || "";
+  return tags[String(type || "").toUpperCase()] || "";
 }
 
 function escapeAttr(value) {
@@ -1579,11 +1482,11 @@ function siteFooter() {
         <img class="brand-logo footer-logo" src="assets/logo-header_w.png" alt="Postoria" ${logoImageAttr()}>
       </div>
       <nav>
-        <a href="#popular" data-scroll="popular">?梢??嗉?</a>
-        <a href="#latest" data-scroll="latest">???嗉?</a>
-        <a href="#login">?撠?</a>
+        <a href="#popular" data-scroll="popular">熱門收藏</a>
+        <a href="#latest" data-scroll="latest">我的收藏</a>
+        <a href="#login">會員專區</a>
       </nav>
-      <p>穢 2026 Postoria. All rights reserved.</p>
+      <p>© 2026 Postoria. All rights reserved.</p>
     </footer>
   `;
 }
@@ -1595,51 +1498,34 @@ function memberName() {
 function renderAuthActions() {
   const signedIn = Boolean(state.member);
   const name = escapeHtml(memberName());
-  const languageSelectorHtml = languageSelector();
   document.body.classList.toggle("is-signed-in", signedIn);
   if (headerAuthActions) {
     headerAuthActions.innerHTML = signedIn ? `
-      ${languageSelectorHtml}
       <a class="solid-button upload-nav-button" href="#upload">
         <svg class="icon"><use href="#icon-upload"></use></svg>
-        <span>銝?縑??/span>
+        <span>上傳明信片</span>
       </a>
       <a class="member-chip" href="#login-success" title="${escapeAttr(memberName())}">
         <svg class="icon"><use href="#icon-user-round"></use></svg>
         <span>${name}</span>
       </a>
-      <button class="ghost-button" type="button" data-action="logout">?餃</button>
+      <button class="ghost-button" type="button" data-action="logout">登出</button>
     ` : `
-      ${languageSelectorHtml}
-      <a class="ghost-button" href="#login">?餃</a>
-      <a class="solid-button" href="#register">閮餃??</a>
+      <a class="ghost-button" href="#login">登入</a>
+      <a class="solid-button" href="#register">註冊會員</a>
     `;
   }
 
   if (mobileAuthActions) {
     mobileAuthActions.innerHTML = signedIn ? `
-      ${languageSelectorHtml}
-      <a href="#upload"><svg class="icon"><use href="#icon-upload"></use></svg>銝?縑??/a>
+      <a href="#upload"><svg class="icon"><use href="#icon-upload"></use></svg>上傳明信片</a>
       <a href="#login-success"><svg class="icon"><use href="#icon-user-round"></use></svg>${name}</a>
-      <button class="mobile-logout" type="button" data-action="logout">?餃</button>
+      <button class="mobile-logout" type="button" data-action="logout">登出</button>
     ` : `
-      ${languageSelectorHtml}
-      <a href="#login"><svg class="icon"><use href="#icon-user-round"></use></svg>?餃</a>
-      <a class="solid-button" href="#register">閮餃??</a>
+      <a href="#login"><svg class="icon"><use href="#icon-user-round"></use></svg>登入</a>
+      <a class="solid-button" href="#register">註冊會員</a>
     `;
   }
-}
-
-function languageSelector() {
-  return `
-    <label class="language-select-wrap" aria-label="Language">
-      <select class="language-select" data-language-select>
-        ${SUPPORTED_LANGUAGES.map(lang => `
-          <option value="${lang}" ${state.lang === lang ? "selected" : ""}>${LANGUAGE_LABELS[lang]}</option>
-        `).join("")}
-      </select>
-    </label>
-  `;
 }
 
 function logo() {
@@ -1655,7 +1541,7 @@ function field({ icon, name, type = "text", placeholder, autocomplete = "", requ
     <label class="field">
       <svg class="icon field-icon" aria-hidden="true"><use href="#${icon}"></use></svg>
       <input name="${name}" type="${type}" placeholder="${placeholder}" ${numberAttrs} ${autocomplete ? `autocomplete="${autocomplete}"` : ""} ${required ? "required" : ""}>
-      ${password ? `<button class="toggle-password" type="button" aria-label="憿舐內???蝣?><svg class="icon"><use href="#icon-eye"></use></svg></button>` : ""}
+      ${password ? `<button class="toggle-password" type="button" aria-label="顯示或隱藏密碼"><svg class="icon"><use href="#icon-eye"></use></svg></button>` : ""}
     </label>
   `;
 }
@@ -1664,9 +1550,9 @@ function authShell(card, showNotice = true) {
   return `
     <section class="auth-layout">
       <aside class="welcome">
-        <span class="sparkle">??/span>
-        <h1>甇∟???嚗?/h1>
-        <p>?餃隞亦匱蝥蝝Ｖ????縑???嗉?蝢末?嚗?鈭思???鈭?/p>
+        <span class="sparkle">✦</span>
+        <h1>歡迎回來！</h1>
+        <p>登入以繼續探索世界的明信片，收藏美好時刻，分享你的故事。</p>
       </aside>
       <div class="auth-stack">
         ${card}
@@ -1679,12 +1565,12 @@ function authShell(card, showNotice = true) {
 function notice() {
   return `
     <aside class="notice">
-      <span>??/span>
+      <span>♢</span>
       <div>
-        <h3>鞎澆???</h3>
+        <h3>貼心提醒</h3>
         <ul>
-          <li>隢Ⅱ隤縑蝞勗?嗡縑嚗誑?嗅?身撖Ⅳ靽∩辣??/li>
-          <li>?桀?蝚砌??寧?乩?敺?HTTPS 皜祈岫?啣?摰?敺????/li>
+          <li>請確認信箱可收信，以收到重設密碼信件。</li>
+          <li>目前第三方登入仍待 HTTPS 測試環境完成後再開放。</li>
         </ul>
       </div>
     </aside>
@@ -1694,22 +1580,22 @@ function notice() {
 function loginCard() {
   return `
     <article class="auth-card">
-      <a class="back-link" href="#home">??????/a>
+      <a class="back-link" href="#home">← 回首頁</a>
       ${logo()}
-      <h2>?餃</h2>
-      <p class="subtitle">???董?? <a href="#register">蝡閮餃?</a></p>
+      <h2>登入</h2>
+      <p class="subtitle">還沒有帳號？ <a href="#register">立即註冊</a></p>
       <form class="auth-form" data-form="login">
-        ${field({ icon: "icon-mail", name: "email", type: "email", placeholder: "?餃??萎辣?啣?", autocomplete: "email" })}
-        ${field({ icon: "icon-lock-keyhole", name: "password", type: "password", placeholder: "撖Ⅳ", autocomplete: "current-password" })}
+        ${field({ icon: "icon-mail", name: "email", type: "email", placeholder: "電子郵件地址", autocomplete: "email" })}
+        ${field({ icon: "icon-lock-keyhole", name: "password", type: "password", placeholder: "密碼", autocomplete: "current-password" })}
         <div class="form-row">
-          <label class="check"><input name="remember" type="checkbox"> 閮???/label>
-          <a class="text-link" href="#forgot">敹?撖Ⅳ嚗?/a>
+          <label class="check"><input name="remember" type="checkbox"> 記住我</label>
+          <a class="text-link" href="#forgot">忘記密碼？</a>
         </div>
-        <button class="primary-button" type="submit">?餃</button>
+        <button class="primary-button" type="submit">登入</button>
         <p class="status"></p>
       </form>
       ${externalAuthActions("login")}
-      <p class="switch-line">撌脩???Google 撣唾?銋隞亦?亦?乓?/p>
+      <p class="switch-line">已經有 Google 帳號也可以直接登入。</p>
     </article>
   `;
 }
@@ -1717,32 +1603,32 @@ function loginCard() {
 function registerCard() {
   return `
     <article class="auth-card">
-      <a class="back-link" href="#home">??????/a>
+      <a class="back-link" href="#home">← 回首頁</a>
       ${logo()}
-      <h2>閮餃??</h2>
-      <p class="subtitle">????嗉?蝢末?嚗?鈭思???</p>
+      <h2>註冊會員</h2>
+      <p class="subtitle">加入我們，收藏美好時刻，分享世界！</p>
       <form class="auth-form" data-form="register">
-        ${field({ icon: "icon-user", name: "displayName", placeholder: "?冽?迂", autocomplete: "name" })}
-        ${field({ icon: "icon-mail", name: "email", type: "email", placeholder: "?餃??萎辣", autocomplete: "email" })}
-        ${field({ icon: "icon-lock-keyhole", name: "password", type: "password", placeholder: "撖Ⅳ", autocomplete: "new-password" })}
-        ${field({ icon: "icon-lock-keyhole", name: "confirmPassword", type: "password", placeholder: "蝣箄?撖Ⅳ", autocomplete: "new-password" })}
+        ${field({ icon: "icon-user", name: "displayName", placeholder: "用戶名稱", autocomplete: "name" })}
+        ${field({ icon: "icon-mail", name: "email", type: "email", placeholder: "電子郵件", autocomplete: "email" })}
+        ${field({ icon: "icon-lock-keyhole", name: "password", type: "password", placeholder: "密碼", autocomplete: "new-password" })}
+        ${field({ icon: "icon-lock-keyhole", name: "confirmPassword", type: "password", placeholder: "確認密碼", autocomplete: "new-password" })}
         <label class="check terms">
           <input name="terms" type="checkbox" required>
-          ?歇?梯?銝血???<a class="text-link" href="#register">??璇狡</a> ??<a class="text-link" href="#register">?梁??輻?</a>
+          我已閱讀並同意 <a class="text-link" href="#register">服務條款</a> 與 <a class="text-link" href="#register">隱私政策</a>
         </label>
-        <button class="primary-button" type="submit">閮餃?</button>
+        <button class="primary-button" type="submit">註冊</button>
         <p class="status"></p>
       </form>
       ${externalAuthActions("register")}
-      <p class="switch-line">撌脩??董?? <a class="text-link" href="#login">蝡?餃</a></p>
+      <p class="switch-line">已經有帳號？ <a class="text-link" href="#login">立即登入</a></p>
     </article>
   `;
 }
 
 function externalAuthActions(mode = "login") {
-  const label = mode === "register" ? "雿輻 Google 閮餃?" : "雿輻 Google ?餃";
+  const label = mode === "register" ? "使用 Google 註冊" : "使用 Google 登入";
   return `
-    <div class="auth-divider"><span>??/span></div>
+    <div class="auth-divider"><span>或</span></div>
     <div class="social-auth-row">
       <a class="google-auth-circle" href="${externalAuthUrl("google")}" aria-label="${label}" title="${label}">
         <svg class="google-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -1756,7 +1642,7 @@ function externalAuthActions(mode = "login") {
   `;
 }
 
-function openLoginPrompt(feature = "雿輻????) {
+function openLoginPrompt(feature = "使用這個功能") {
   state.loginPrompt = { feature };
   render();
 }
@@ -1768,15 +1654,15 @@ function closeLoginPrompt() {
 
 function loginPromptModal() {
   if (!state.loginPrompt) return "";
-  const feature = state.loginPrompt.feature || "雿輻????;
+  const feature = state.loginPrompt.feature || "使用這個功能";
   return `
-    <div class="login-prompt-modal" role="dialog" aria-modal="true" aria-label="??餃?內">
-      <button class="login-prompt-backdrop" type="button" data-action="close-login-prompt" aria-label="???餃?內"></button>
+    <div class="login-prompt-modal" role="dialog" aria-modal="true" aria-label="會員登入提示">
+      <button class="login-prompt-backdrop" type="button" data-action="close-login-prompt" aria-label="關閉登入提示"></button>
       <section class="login-prompt-card">
-        <button class="login-prompt-close" type="button" data-action="close-login-prompt" aria-label="???餃?內">?</button>
-        <span class="login-prompt-kicker">??</span>
-        <h2>?餃?敺??{escapeHtml(feature)}</h2>
-        <p>? Postoria ?嚗隞交??甇∠??縑??鋆賢漣璅?銋銝雿??桀???靽∠???/p>
+        <button class="login-prompt-close" type="button" data-action="close-login-prompt" aria-label="關閉登入提示">×</button>
+        <span class="login-prompt-kicker">會員功能</span>
+        <h2>登入會員後即可${escapeHtml(feature)}</h2>
+        <p>加入 Postoria 會員，可以收藏喜歡的明信片、複製座標，也能上傳你的皮克敏明信片。</p>
         <div class="login-prompt-actions">
           <a class="login-prompt-google" href="${externalAuthUrl("google")}" data-preserve-auth-return="true">
             <svg class="google-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -1785,12 +1671,13 @@ function loginPromptModal() {
               <path fill="#FBBC05" d="M6.3 13.7a6 6 0 0 1 0-3.4V7.7H3a10 10 0 0 0 0 8.6l3.3-2.6Z"></path>
               <path fill="#EA4335" d="M12 6.1c1.5 0 2.8.5 3.8 1.5l2.9-2.9A9.7 9.7 0 0 0 12 2a10 10 0 0 0-9 5.7l3.3 2.6C7.1 7.9 9.3 6.1 12 6.1Z"></path>
             </svg>
-            雿輻 Google 敹恍??          </a>
+            使用 Google 快速登入
+          </a>
           <div class="login-prompt-secondary">
-            <a href="#login">Email ?餃</a>
-            <a href="#register">閮餃??</a>
+            <a href="#login">Email 登入</a>
+            <a href="#register">註冊會員</a>
           </div>
-          <button class="login-prompt-later" type="button" data-action="close-login-prompt">蝔??牧</button>
+          <button class="login-prompt-later" type="button" data-action="close-login-prompt">稍後再說</button>
         </div>
       </section>
     </div>
@@ -1801,11 +1688,11 @@ function forgotCard(sent = false) {
   if (sent) {
     return `
       <article class="success-card">
-        <span class="success-mark" aria-hidden="true">??/span>
+        <span class="success-mark" aria-hidden="true">✓</span>
         <div>
-          <h2>?身???撌脩??</h2>
-          <p>?歇撠?閮剖?蝣潛?????潮?函??餃??萎辣嚗?瑼Ｘ?函?靽∠拳??/p>
-          <a class="outline-button" href="#login">餈??餃</a>
+          <h2>重設連結已發送！</h2>
+          <p>我們已將重設密碼的連結發送至您的電子郵件，請檢查您的信箱。</p>
+          <a class="outline-button" href="#login">返回登入</a>
         </div>
       </article>
     `;
@@ -1813,13 +1700,13 @@ function forgotCard(sent = false) {
 
   return `
     <article class="auth-card">
-      <a class="back-link" href="#login">??餈??餃</a>
+      <a class="back-link" href="#login">← 返回登入</a>
       ${logo()}
-      <h2>敹?撖Ⅳ嚗?/h2>
-      <p class="subtitle">隢撓?交?摮隞塚????潮?閮剖?蝣潛????蝯行??/p>
+      <h2>忘記密碼？</h2>
+      <p class="subtitle">請輸入您的電子郵件，我們將發送重設密碼的連結給您。</p>
       <form class="auth-form" data-form="forgot">
-        ${field({ icon: "icon-mail", name: "email", type: "email", placeholder: "?餃??萎辣", autocomplete: "email" })}
-        <button class="primary-button" type="submit">?潮?閮剝??</button>
+        ${field({ icon: "icon-mail", name: "email", type: "email", placeholder: "電子郵件", autocomplete: "email" })}
+        <button class="primary-button" type="submit">發送重設連結</button>
         <p class="status"></p>
       </form>
     </article>
@@ -1829,11 +1716,11 @@ function forgotCard(sent = false) {
 function renderLoginSuccess() {
   return authShell(`
     <article class="success-card">
-      <span class="success-mark" aria-hidden="true">??/span>
+      <span class="success-mark" aria-hidden="true">✓</span>
       <div>
-        <h2>?餃??</h2>
-        <p>${state.member?.displayName || state.member?.email || "Postorian"}嚗迭餈???Postoria??/p>
-        <a class="outline-button" href="#home">?擐?</a>
+        <h2>登入成功</h2>
+        <p>${state.member?.displayName || state.member?.email || "Postorian"}，歡迎回到 Postoria。</p>
+        <a class="outline-button" href="#home">回到首頁</a>
       </div>
     </article>
   `, true);
@@ -1845,9 +1732,9 @@ function uploadCard() {
       <article class="success-card">
         <span class="success-mark warning-mark" aria-hidden="true">!</span>
         <div>
-          <h2>隢??餃</h2>
-          <p>銝?縑??閬??∟澈???餃敺?舫敺祟?貉???/p>
-          <a class="primary-button" href="#login">?餃?</a>
+          <h2>請先登入</h2>
+          <p>上傳明信片需要會員身分，登入後即可送出待審核資料。</p>
+          <a class="primary-button" href="#login">登入會員</a>
         </div>
       </article>
     `, true);
@@ -1855,39 +1742,39 @@ function uploadCard() {
 
   return authShell(`
     <article class="auth-card upload-card">
-      <a class="back-link" href="#login-success">餈??撠?</a>
+      <a class="back-link" href="#login-success">返回會員專區</a>
       ${logo()}
-      <h2>銝?縑??/h2>
-      <p class="subtitle">?敺??摮敺祟?貉???撖拇??敺???曉蝬脩???/p>
+      <h2>上傳明信片</h2>
+      <p class="subtitle">送出後會先暫存為待審核資料，審核通過後才會出現在網站。</p>
       <form class="auth-form upload-form" data-form="postcard-upload">
         <label class="field file-field">
           <svg class="icon field-icon"><use href="#icon-upload"></use></svg>
-          <span data-file-label>?豢??? JPG / PNG / WebP嚗?MB 隞亙</span>
+          <span data-file-label>選擇圖片 JPG / PNG / WebP，8MB 以內</span>
           <input name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
         </label>
-        ${field({ icon: "icon-search", name: "coordinates", type: "text", placeholder: "蝬楝摨佗?靘? 45.5041130, -73.5442030", required: false })}
-        ${field({ icon: "icon-heart", name: "tags", placeholder: "璅惜嚗?券???# ??", required: false })}
+        ${field({ icon: "icon-search", name: "coordinates", type: "text", placeholder: "經緯度，例如 45.5041130, -73.5442030", required: false })}
+        ${field({ icon: "icon-heart", name: "tags", placeholder: "標籤，可用逗號或 # 分隔", required: false })}
         <fieldset class="segmented-field">
-          <legend>???孵?</legend>
+          <legend>取得方式</legend>
           <label>
             <input type="radio" name="postcardType" value="MUSHROOM">
-            <span>??</span>
+            <span>打菇</span>
           </label>
           <label>
             <input type="radio" name="postcardType" value="FLOWER" checked>
-            <span>??/span>
+            <span>花</span>
           </label>
           <label>
             <input type="radio" name="postcardType" value="EXPLORATION">
-            <span>?Ｙ揣</span>
+            <span>探索</span>
           </label>
         </fieldset>
-        <button class="primary-button" type="submit">?撖拇</button>
+        <button class="primary-button" type="submit">送出審核</button>
         <p class="status"></p>
       </form>
       <aside class="upload-note">
-        <strong>鞈?閬?</strong>
-        <p>?桀??神?亙?撖拇銵冽嚗???path 摮 pending ?桅??靘??啣祟?詨???嚗?頧甇???縑????/p>
+        <strong>資料規劃</strong>
+        <p>目前會寫入待審核表格，圖片 path 存在 pending 目錄。未來後台審核同意後，再轉入正式明信片資料。</p>
       </aside>
       ${uploadResultDialog()}
     </article>
@@ -1898,29 +1785,29 @@ function uploadResultDialog() {
   if (!state.uploadResult) return "";
 
   const upload = state.uploadResult;
-  const coordinates = formatCoordinates(upload.latitude, upload.longitude) || "?芣?靘?;
-  const tags = Array.isArray(upload.tags) && upload.tags.length ? upload.tags.join("??) : "?芣?靘?;
+  const coordinates = formatCoordinates(upload.latitude, upload.longitude) || "未提供";
+  const tags = Array.isArray(upload.tags) && upload.tags.length ? upload.tags.join("、") : "未提供";
   const method = postcardTypeLabel(upload.postcardType);
-  const reviewStatus = upload.reviewStatus === "pending" ? "敺祟?? : upload.reviewStatus;
-  const fileName = upload.originalFileName || upload.imagePath?.split("/").pop() || "撌脖??喳???;
+  const reviewStatus = upload.reviewStatus === "pending" ? "待審核" : upload.reviewStatus;
+  const fileName = upload.originalFileName || upload.imagePath?.split("/").pop() || "已上傳圖片";
 
   return `
-    <div class="upload-result-overlay" role="dialog" aria-modal="true" aria-label="銝撌脤">
+    <div class="upload-result-overlay" role="dialog" aria-modal="true" aria-label="上傳已送出">
       <section class="upload-result-dialog">
-        <span class="upload-result-mark" aria-hidden="true">??/span>
+        <span class="upload-result-mark" aria-hidden="true">✓</span>
         <div>
-          <h3>銝撌脤</h3>
-          <p>敺垢撌脫?啣???鞈?嚗祟?賊?敺???曉蝬脩???/p>
+          <h3>上傳已送出</h3>
+          <p>後端已收到圖片與資料，審核通過後才會出現在網站。</p>
         </div>
         <dl>
-          <div><dt>??</dt><dd>${escapeHtml(fileName)}</dd></div>
-          <div><dt>?怠?璅?</dt><dd>${escapeHtml(upload.title || fileName)}</dd></div>
-          <div><dt>???孵?</dt><dd>${escapeHtml(method)}</dd></div>
-          <div><dt>摨扳?</dt><dd>${escapeHtml(coordinates)}</dd></div>
-          <div><dt>璅惜</dt><dd>${escapeHtml(tags)}</dd></div>
-          <div><dt>???/dt><dd>${escapeHtml(reviewStatus)}</dd></div>
+          <div><dt>圖片</dt><dd>${escapeHtml(fileName)}</dd></div>
+          <div><dt>暫存標題</dt><dd>${escapeHtml(upload.title || fileName)}</dd></div>
+          <div><dt>取得方式</dt><dd>${escapeHtml(method)}</dd></div>
+          <div><dt>座標</dt><dd>${escapeHtml(coordinates)}</dd></div>
+          <div><dt>標籤</dt><dd>${escapeHtml(tags)}</dd></div>
+          <div><dt>狀態</dt><dd>${escapeHtml(reviewStatus)}</dd></div>
         </dl>
-        <button class="primary-button" type="button" data-action="close-upload-result">?仿?鈭?/button>
+        <button class="primary-button" type="button" data-action="close-upload-result">知道了</button>
       </section>
     </div>
   `;
@@ -1932,7 +1819,7 @@ async function handleSubmit(event) {
     event.preventDefault();
     const keyword = new FormData(searchForm).get("keyword")?.toString().trim();
     if (!keyword) {
-      showToast("隢撓?交?撠??萄?");
+      showToast("請輸入搜尋關鍵字");
       return;
     }
     state.search = keyword.replace(/^#/, "");
@@ -1946,7 +1833,7 @@ async function handleSubmit(event) {
       requestAnimationFrame(() => document.querySelector(".search-results")?.scrollIntoView({ behavior: "smooth", block: "start" }));
     }
     closeSearchLightbox();
-    showToast(`撌脫?撠?{keyword}?);
+    showToast(`已搜尋「${keyword}」`);
     return;
   }
 
@@ -1962,7 +1849,7 @@ async function handleSubmit(event) {
   try {
     if (form.dataset.form === "postcard-upload") {
       if (!state.token) {
-        throw new Error("隢??餃???);
+        throw new Error("請先登入會員。");
       }
 
       const coordinates = String(formData.get("coordinates") || "").trim();
@@ -1970,7 +1857,7 @@ async function handleSubmit(event) {
       if (coordinates) {
         const parsedCoordinates = parseCoordinatePair(coordinates);
         if (!parsedCoordinates) {
-          throw new Error("摨扳??澆?隢撓?伐?蝺臬漲, 蝬漲嚗?憒?45.5041130, -73.5442030");
+          throw new Error("座標格式請輸入：緯度, 經度，例如 45.5041130, -73.5442030");
         }
 
         formData.set("latitude", parsedCoordinates.latitude);
@@ -1990,9 +1877,9 @@ async function handleSubmit(event) {
       state.uploads = [upload, ...state.uploads];
       state.uploadResult = upload;
       form.reset();
-      form.querySelector("[data-file-label]").textContent = "?豢??? JPG / PNG / WebP嚗?MB 隞亙";
-      setStatus(form, "撌脤撖拇嚗????＊蝷箏蝬脩???);
-      showToast("?縑?歇?撖拇");
+      form.querySelector("[data-file-label]").textContent = "選擇圖片 JPG / PNG / WebP，8MB 以內";
+      setStatus(form, "已送出審核，通過前不會顯示在網站。");
+      showToast("明信片已送出審核");
       render();
       return;
     }
@@ -2003,27 +1890,27 @@ async function handleSubmit(event) {
         password: values.password
       });
       setSession(result.member, result.accessToken, result.expiresAt);
-      showToast("?餃??");
+      showToast("登入成功");
       location.hash = "login-success";
     }
 
     if (form.dataset.form === "register") {
       if (values.password !== values.confirmPassword) {
-        throw new Error("?拇活頛詨??蝣潔?銝?氬?);
+        throw new Error("兩次輸入的密碼不一致。");
       }
       await apiPost("/api/members/register", {
         email: values.email,
         password: values.password,
         displayName: values.displayName
       });
-      showToast("閮餃???嚗??餃");
+      showToast("註冊成功，請登入");
       location.hash = "login";
     }
 
     if (form.dataset.form === "forgot") {
       await apiPost("/api/members/forgot-password", { email: values.email });
       sessionStorage.setItem("postoria-reset-sent", "1");
-      showToast("?身???撌脤");
+      showToast("重設連結已送出");
       render();
     }
   } catch (error) {
@@ -2183,7 +2070,7 @@ async function handleClick(event) {
   if (favorite) {
     const id = favorite.dataset.favorite;
     if (!state.token) {
-      openLoginPrompt("?嗉??迭??靽∠?");
+      openLoginPrompt("收藏喜歡的明信片");
       return;
     }
 
@@ -2198,9 +2085,9 @@ async function handleClick(event) {
         : [...state.favorites, id];
       localStorage.setItem("postoria-favorites", JSON.stringify(state.favorites));
       syncFavoriteButtons(id, !isActive, result.favoriteCount);
-      showToast(isActive ? "撌脩宏?斗?? : "撌脣??交??);
+      showToast(isActive ? "已移除收藏" : "已加入收藏");
     } catch (error) {
-      showToast(error.message || "?嗉??湔憭望?");
+      showToast(error.message || "收藏更新失敗");
     } finally {
       favorite.disabled = false;
     }
@@ -2210,13 +2097,13 @@ async function handleClick(event) {
   const copyCoordinates = event.target.closest("[data-copy-coordinates]");
   if (copyCoordinates) {
     if (!state.token) {
-      openLoginPrompt("銴ˊ?縑?漣璅?);
+      openLoginPrompt("複製明信片座標");
       return;
     }
 
     const text = copyCoordinates.dataset.copyCoordinates;
     const copied = await copyText(text);
-    showToast(copied ? "摨扳?撌脰?鋆? : "?⊥?銴ˊ摨扳?嚗????詨?");
+    showToast(copied ? "座標已複製" : "無法複製座標，請手動選取");
     return;
   }
 
@@ -2225,7 +2112,7 @@ async function handleClick(event) {
     const card = findPostcardById(copyPostcardLinkButton.dataset.copyPostcardLink);
     const link = card ? postcardShareUrl(card) : "";
     const copied = await copyText(link);
-    showToast(copied ? "?縑???撌脰?鋆? : "?⊥?銴ˊ?縑???");
+    showToast(copied ? "明信片連結已複製" : "無法複製明信片連結");
     return;
   }
 
@@ -2292,7 +2179,7 @@ async function handleClick(event) {
 
   if (action?.dataset.action === "show-favorites") {
     const count = state.favorites.length;
-    showToast(count ? `?桀?撌脫??${count} 撘菜?靽∠?` : "雿??芣??靽∠?");
+    showToast(count ? `目前已收藏 ${count} 張明信片` : "你尚未收藏明信片");
     return;
   }
 
@@ -2301,14 +2188,14 @@ async function handleClick(event) {
     closeCatalogModal();
     mobileMenu.classList.remove("open");
     mobileMenu.setAttribute("aria-hidden", "true");
-    showToast("撌脩??);
+    showToast("已登出");
     location.hash = "home";
     render();
     return;
   }
 
   if (action?.dataset.action === "need-login") {
-    openLoginPrompt(action.dataset.label || "雿輻????);
+    openLoginPrompt(action.dataset.label || "使用這個功能");
   }
 }
 
@@ -2347,7 +2234,7 @@ async function copyText(text) {
 }
 
 function normalizeShareHashtags(card) {
-  const fixedTags = ["pikimin", "?桀???, "?桀???靽∠?", "pikimin?縑??];
+  const fixedTags = ["pikimin", "皮克敏", "皮克敏明信片", "pikimin明信片"];
   const rawTags = [
     ...(Array.isArray(card.tags) ? card.tags : []),
     card.hashtag,
@@ -2356,7 +2243,7 @@ function normalizeShareHashtags(card) {
   const tagSet = new Set();
   rawTags
     .filter(Boolean)
-    .flatMap(tag => String(tag).split(/[\s,嚗?]+/))
+    .flatMap(tag => String(tag).split(/[\s,，、#]+/))
     .map(tag => tag.trim())
     .filter(Boolean)
     .forEach(tag => tagSet.add(tag));
@@ -2367,7 +2254,7 @@ function normalizeShareHashtags(card) {
 async function sharePostcard(id) {
   const card = findPostcardById(id);
   if (!card) {
-    showToast("?曆??啗??澈??靽∠?");
+    showToast("找不到要分享的明信片");
     return;
   }
   const url = postcardShareUrl(card);
@@ -2375,7 +2262,7 @@ async function sharePostcard(id) {
   const customShareText = String(card.shareText || "").trim();
   const nativeText = [url, customShareText, hashtagText].filter(Boolean).join("\n");
   const nativePayload = {
-    title: `Postoria嚚?{card.title}`,
+    title: `Postoria｜${card.title}`,
     text: nativeText
   };
   const prefersNativeShare = window.matchMedia?.("(pointer: coarse)")?.matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
@@ -2388,7 +2275,7 @@ async function sharePostcard(id) {
     // If the native share sheet is cancelled, fall back to copying the link.
   }
   const copied = await copyText(nativeText);
-  showToast(copied ? "?澈?批捆撌脰?鋆? : "?⊥?銴ˊ?澈?批捆");
+  showToast(copied ? "分享內容已複製" : "無法複製分享內容");
 }
 
 function openSearchLightbox(value = "") {
@@ -2509,4 +2396,3 @@ if (initialRoute === "popular") {
 } else {
   render();
 }
-
