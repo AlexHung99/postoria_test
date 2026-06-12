@@ -1118,7 +1118,7 @@ function renderPostcardDetail(route) {
           <dl class="detail-facts">
             <div><dt>編號</dt><dd>${escapeHtml(card.legacyNumber || card.id || "未設定")}</dd></div>
             <div><dt>取得方式</dt><dd>${escapeHtml(postcardTypeLabel(card.postcardType))}</dd></div>
-            <div><dt>座標</dt><dd>${coordinates || (card.hasCoordinates ? "登入後查看" : "未提供")}${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : (card.hasCoordinates && coordinateKey ? `<button type="button" class="copy-coordinate-button" data-copy-coordinate-card="${escapeAttr(coordinateKey)}" title="登入後複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : "")}</dd></div>
+            <div><dt>座標</dt><dd>${coordinates || (card.hasCoordinates ? "登入後查看" : "未提供")}${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : (card.hasCoordinates && coordinateKey ? `<button type="button" class="coordinate-login-button" data-copy-coordinate-card="${escapeAttr(coordinateKey)}">登入複製</button>` : "")}</dd></div>
             <div><dt>收藏</dt><dd><span data-favorite-count="${escapeAttr(key)}">${escapeHtml(card.likes)}</span></dd></div>
             <div><dt>瀏覽</dt><dd>${escapeHtml(card.views)}</dd></div>
           </dl>
@@ -1398,7 +1398,7 @@ function catalogCard(card) {
           <div class="postcard-detail-row">
             <span>座標</span>
             <strong>${coordinates || (card.hasCoordinates ? "登入後查看" : "未提供")}</strong>
-            ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" aria-label="複製座標" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : (card.hasCoordinates && coordinateKey ? `<button type="button" class="copy-coordinate-button" data-copy-coordinate-card="${escapeAttr(coordinateKey)}" aria-label="登入後複製座標" title="登入後複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : "")}
+            ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" aria-label="複製座標" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : (card.hasCoordinates && coordinateKey ? `<button type="button" class="coordinate-login-button" data-copy-coordinate-card="${escapeAttr(coordinateKey)}" aria-label="登入後複製座標">登入複製</button>` : "")}
           </div>
           <div class="postcard-detail-row">
             <span>取得</span>

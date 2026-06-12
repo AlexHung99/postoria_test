@@ -1321,6 +1321,29 @@ img {
   outline: 0;
 }
 
+.coordinate-login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 106, 112, 0.24);
+  border-radius: 999px;
+  color: var(--teal-dark);
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.coordinate-login-button:hover,
+.coordinate-login-button:focus-visible {
+  border-color: var(--teal);
+  outline: 0;
+  box-shadow: 0 8px 18px rgba(0, 106, 112, 0.12);
+}
+
 .postcard-detail-page {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
