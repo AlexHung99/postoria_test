@@ -33,6 +33,8 @@ const state = {
   uploadResult: null,
   imageLightbox: null,
   loginPrompt: null,
+  coordinateCache: {},
+  coordinatePending: new Set(),
   publicData: null,
   home: null,
   homeLoading: false,
@@ -285,12 +287,13 @@ function normalizeHomeData(data) {
   };
 }
 
-function mapApiPostcard(item) {
+function mapApiPostcard(item, includeCoordinates = false) {
   const typeTag = postcardTypeHashtag(item.postcardType);
   const tags = Array.from(new Set([
     ...(Array.isArray(item.tags) ? item.tags : []),
     typeTag
   ].filter(Boolean)));
+  const cachedCoordinates = getCachedCoordinates(item);
 
   return {
     id: item.legacyId || item.id,
@@ -304,8 +307,8 @@ function mapApiPostcard(item) {
     views: Number(item.viewCount || 0).toLocaleString(),
     tags,
     legacyNumber: item.legacyNumber,
-    latitude: null,
-    longitude: null,
+    latitude: cachedCoordinates?.latitude ?? (includeCoordinates ? item.latitude : null),
+    longitude: cachedCoordinates?.longitude ?? (includeCoordinates ? item.longitude : null),
     hasCoordinates: Boolean(item.hasCoordinates || (item.latitude && item.longitude)),
     postcardType: item.postcardType,
     shareText: item.shareText || ""
@@ -379,6 +382,7 @@ async function openCatalog(next = {}) {
   if (patchModal) {
     updateCatalogModalInPlace();
     restoreCatalogViewport(viewportSnapshot);
+    hydrateVisibleCoordinates();
   } else {
     render();
     restoreCatalogViewport(viewportSnapshot);
@@ -717,6 +721,42 @@ function favoriteKey(card) {
   return String(card.uid || card.id);
 }
 
+function coordinateCacheKeys(source) {
+  if (!source) return [];
+  const keys = [
+    source.uid,
+    source.id,
+    source.legacyId,
+    source.legacyNumber,
+    source.legacyNumber ? `pc_${source.legacyNumber}` : ""
+  ];
+  return Array.from(new Set(keys.map(item => String(item || "").trim()).filter(Boolean)));
+}
+
+function getCachedCoordinates(source) {
+  const keys = coordinateCacheKeys(source);
+  for (const key of keys) {
+    const cached = state.coordinateCache[key];
+    if (cached) return cached;
+  }
+  return null;
+}
+
+function setCachedCoordinates(source, latitude, longitude) {
+  const parsedLatitude = Number(latitude);
+  const parsedLongitude = Number(longitude);
+  if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) return null;
+
+  const coordinates = {
+    latitude: parsedLatitude,
+    longitude: parsedLongitude
+  };
+  coordinateCacheKeys(source).forEach(key => {
+    state.coordinateCache[key] = coordinates;
+  });
+  return coordinates;
+}
+
 function isFavorite(card) {
   return state.favorites.includes(favoriteKey(card));
 }
@@ -1035,7 +1075,7 @@ async function openFavoriteCatalog() {
     const items = await fetchAuthorizedJson("/api/members/me/favorites/postcards");
     state.catalog = {
       ...state.catalog,
-      items: (items || []).map(mapApiPostcard),
+      items: (items || []).map(item => mapApiPostcard(item, true)),
       total: items?.length || 0,
       totalPages: 1,
       loading: false
@@ -1415,8 +1455,9 @@ function catalogCard(card) {
 }
 
 function formatCoordinates(card, longitudeValue = undefined) {
-  const rawLatitude = typeof card === "object" ? card.latitude : card;
-  const rawLongitude = typeof card === "object" ? card.longitude : longitudeValue;
+  const cachedCoordinates = typeof card === "object" ? getCachedCoordinates(card) : null;
+  const rawLatitude = cachedCoordinates?.latitude ?? (typeof card === "object" ? card.latitude : card);
+  const rawLongitude = cachedCoordinates?.longitude ?? (typeof card === "object" ? card.longitude : longitudeValue);
   if (rawLatitude === null || rawLatitude === undefined || rawLatitude === "" ||
     rawLongitude === null || rawLongitude === undefined || rawLongitude === "") {
     return "";
@@ -1434,11 +1475,58 @@ function coordinateLookupKey(card) {
 }
 
 async function fetchPostcardCoordinates(postcardKey) {
+  const cached = getCachedCoordinates({ id: postcardKey, uid: postcardKey, legacyId: postcardKey, legacyNumber: postcardKey });
+  if (cached) return formatCoordinates(cached);
+
   const result = await fetchAuthorizedJson(`/api/members/me/postcards/${encodeURIComponent(postcardKey)}/coordinates`);
+  setCachedCoordinates({
+    id: result.id || postcardKey,
+    uid: result.id || postcardKey,
+    legacyId: result.legacyId,
+    legacyNumber: result.legacyNumber
+  }, result.latitude, result.longitude);
   return formatCoordinates({
     latitude: result.latitude,
     longitude: result.longitude
   });
+}
+
+async function hydrateVisibleCoordinates() {
+  if (!state.token) return;
+
+  const route = getRoute();
+  const cards = [];
+  if (isPostcardDetailRoute(route)) {
+    const detailCard = findPostcardById(postcardRouteId(route));
+    if (detailCard) cards.push(detailCard);
+  }
+
+  if (state.catalog.showPostcards && Array.isArray(state.catalog.items)) {
+    cards.push(...state.catalog.items);
+  }
+
+  const targets = cards
+    .filter(card => card?.hasCoordinates && !formatCoordinates(card))
+    .map(card => coordinateLookupKey(card))
+    .filter(Boolean)
+    .filter(key => !state.coordinatePending.has(key));
+
+  if (!targets.length) return;
+
+  targets.forEach(key => state.coordinatePending.add(key));
+  let updated = false;
+  await Promise.all(targets.map(async key => {
+    try {
+      const text = await fetchPostcardCoordinates(key);
+      updated = updated || Boolean(text);
+    } catch {
+      // Keep the page usable even when one coordinate lookup fails.
+    } finally {
+      state.coordinatePending.delete(key);
+    }
+  }));
+
+  if (updated) render();
 }
 
 function parseCoordinatePair(value) {
@@ -2430,6 +2518,7 @@ function render() {
   if (state.loginPrompt) {
     app.insertAdjacentHTML("beforeend", loginPromptModal());
   }
+  hydrateVisibleCoordinates();
 }
 
 if (state.token) {
