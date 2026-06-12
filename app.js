@@ -207,6 +207,8 @@ function clearSession() {
   state.favorites = [];
   state.uploads = [];
   state.uploadResult = null;
+  state.coordinateCache = {};
+  state.coordinatePending.clear();
   localStorage.removeItem("postoria-member");
   localStorage.removeItem("postoria-token");
   localStorage.removeItem("postoria-token-expires-at");
@@ -1455,6 +1457,10 @@ function catalogCard(card) {
 }
 
 function formatCoordinates(card, longitudeValue = undefined) {
+  if (typeof card === "object" && card?.hasCoordinates && !state.token) {
+    return "";
+  }
+
   const cachedCoordinates = typeof card === "object" ? getCachedCoordinates(card) : null;
   const rawLatitude = cachedCoordinates?.latitude ?? (typeof card === "object" ? card.latitude : card);
   const rawLongitude = cachedCoordinates?.longitude ?? (typeof card === "object" ? card.longitude : longitudeValue);
