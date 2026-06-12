@@ -306,6 +306,7 @@ function mapApiPostcard(item) {
     legacyNumber: item.legacyNumber,
     latitude: item.latitude,
     longitude: item.longitude,
+    hasCoordinates: Boolean(item.hasCoordinates || (item.latitude && item.longitude)),
     postcardType: item.postcardType,
     shareText: item.shareText || ""
   };
@@ -1090,6 +1091,7 @@ function renderPostcardDetail(route) {
   const active = isFavorite(card);
   const key = favoriteKey(card);
   const coordinates = formatCoordinates(card);
+  const coordinateKey = coordinateLookupKey(card);
   const tags = card.tags || [];
   const backUrl = postcardDetailBackUrl(route);
 
@@ -1116,7 +1118,7 @@ function renderPostcardDetail(route) {
           <dl class="detail-facts">
             <div><dt>編號</dt><dd>${escapeHtml(card.legacyNumber || card.id || "未設定")}</dd></div>
             <div><dt>取得方式</dt><dd>${escapeHtml(postcardTypeLabel(card.postcardType))}</dd></div>
-            <div><dt>座標</dt><dd>${coordinates || "未提供"}${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}</dd></div>
+            <div><dt>座標</dt><dd>${coordinates || (card.hasCoordinates ? "登入後查看" : "未提供")}${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : (card.hasCoordinates && coordinateKey ? `<button type="button" class="copy-coordinate-button" data-copy-coordinate-card="${escapeAttr(coordinateKey)}" title="登入後複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : "")}</dd></div>
             <div><dt>收藏</dt><dd><span data-favorite-count="${escapeAttr(key)}">${escapeHtml(card.likes)}</span></dd></div>
             <div><dt>瀏覽</dt><dd>${escapeHtml(card.views)}</dd></div>
           </dl>
@@ -1379,6 +1381,7 @@ function catalogCard(card) {
   const tags = (card.tags || []).slice(0, 3);
   const cardNumber = card.legacyNumber || card.id;
   const coordinates = formatCoordinates(card);
+  const coordinateKey = coordinateLookupKey(card);
   const obtainLabel = postcardTypeLabel(card.postcardType);
   return `
     <article class="postcard-card">
@@ -1394,8 +1397,8 @@ function catalogCard(card) {
         <div class="postcard-details">
           <div class="postcard-detail-row">
             <span>座標</span>
-            <strong>${coordinates || "未提供"}</strong>
-            ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" aria-label="複製座標" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : ""}
+            <strong>${coordinates || (card.hasCoordinates ? "登入後查看" : "未提供")}</strong>
+            ${coordinates ? `<button type="button" class="copy-coordinate-button" data-copy-coordinates="${escapeAttr(coordinates)}" aria-label="複製座標" title="複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : (card.hasCoordinates && coordinateKey ? `<button type="button" class="copy-coordinate-button" data-copy-coordinate-card="${escapeAttr(coordinateKey)}" aria-label="登入後複製座標" title="登入後複製座標"><svg class="icon"><use href="#icon-copy"></use></svg></button>` : "")}
           </div>
           <div class="postcard-detail-row">
             <span>取得</span>
@@ -1416,6 +1419,19 @@ function formatCoordinates(card, longitudeValue = undefined) {
   const longitude = Number(typeof card === "object" ? card.longitude : longitudeValue);
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return "";
   return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+}
+
+function coordinateLookupKey(card) {
+  if (!card) return "";
+  return String(card.uid || card.legacyNumber || card.id || "").trim();
+}
+
+async function fetchPostcardCoordinates(postcardKey) {
+  const result = await fetchAuthorizedJson(`/api/members/me/postcards/${encodeURIComponent(postcardKey)}/coordinates`);
+  return formatCoordinates({
+    latitude: result.latitude,
+    longitude: result.longitude
+  });
 }
 
 function parseCoordinatePair(value) {
@@ -2104,6 +2120,31 @@ async function handleClick(event) {
     const text = copyCoordinates.dataset.copyCoordinates;
     const copied = await copyText(text);
     showToast(copied ? "座標已複製" : "無法複製座標，請手動選取");
+    return;
+  }
+
+  const copyCoordinateCard = event.target.closest("[data-copy-coordinate-card]");
+  if (copyCoordinateCard) {
+    if (!state.token) {
+      openLoginPrompt("複製座標需要登入會員");
+      return;
+    }
+
+    copyCoordinateCard.disabled = true;
+    try {
+      const text = await fetchPostcardCoordinates(copyCoordinateCard.dataset.copyCoordinateCard);
+      if (!text) {
+        showToast("這張明信片沒有座標資料");
+        return;
+      }
+
+      const copied = await copyText(text);
+      showToast(copied ? "座標已複製" : "無法複製座標，請手動選取");
+    } catch (error) {
+      showToast(error.message || "座標讀取失敗");
+    } finally {
+      copyCoordinateCard.disabled = false;
+    }
     return;
   }
 
