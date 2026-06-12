@@ -304,8 +304,8 @@ function mapApiPostcard(item) {
     views: Number(item.viewCount || 0).toLocaleString(),
     tags,
     legacyNumber: item.legacyNumber,
-    latitude: item.latitude,
-    longitude: item.longitude,
+    latitude: null,
+    longitude: null,
     hasCoordinates: Boolean(item.hasCoordinates || (item.latitude && item.longitude)),
     postcardType: item.postcardType,
     shareText: item.shareText || ""
